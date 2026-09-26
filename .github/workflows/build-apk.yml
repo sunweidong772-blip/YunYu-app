@@ -90,7 +90,7 @@ jobs:
         path: ./apk
     
     - name: Sign APK
-    if: env.SIGNING_KEYSTORE != ''
+      if: env.SIGNING_KEYSTORE != ''
       uses: r0adkll/sign-android-release@v1
       with:
         releaseDirectory: ./apk
@@ -101,7 +101,7 @@ jobs:
       id: sign_app
     
     - name: Upload Signed APK
-    if: env.SIGNING_KEYSTORE != ''
+      if: env.SIGNING_KEYSTORE != ''
       uses: actions/upload-artifact@v4
       with:
         name: app-release-signed
