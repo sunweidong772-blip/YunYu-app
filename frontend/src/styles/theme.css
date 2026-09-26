@@ -1,44 +1,47 @@
-// 云屿设计系统 · 主题变量
-// 品牌视觉：云 + 岛屿。主色为岛屿海天蓝，深色模式重新整层级。
+/* 云屿 2.0 设计系统 · 现代社区风格 */
+/* 参考：即刻、小红书、TapTap 等头部中文社区 APP */
 :root {
-  --brand: #2f8cff;
-  --brand-strong: #1f7be8;
-  --brand-soft: rgba(47, 140, 255, 0.12);
-  --brand-grad: linear-gradient(135deg, #4da3ff 0%, #2f8cff 55%, #1e6fd6 100%);
-  --accent: #34d0a3;            /* 岛屿绿 */
-  --accent-soft: rgba(52, 208, 163, 0.14);
+  /* === 品牌色 === */
+  --brand: #4F46E5;            /* 靛蓝主色 */
+  --brand-strong: #4338CA;     /* 深靛蓝 */
+  --brand-soft: rgba(79, 70, 229, 0.08);
+  --brand-grad: linear-gradient(135deg, #6366F1 0%, #4F46E5 50%, #4338CA 100%);
+  --accent: #10B981;           /* 翠绿 */
+  --accent-soft: rgba(16, 185, 129, 0.10);
+  --accent-grad: linear-gradient(135deg, #34D399 0%, #10B981 100%);
 
-  /* 背景层级 */
-  --bg: #f5f7fb;
-  --bg-elev: #ffffff;
-  --card: #ffffff;
-  --card-2: #f0f4fa;
-  --surface: #ffffff;
+  /* === 背景层级 === */
+  --bg: #F8FAFC;
+  --bg-elev: #F1F5F9;
+  --card: #FFFFFF;
+  --card-hover: #FAFBFC;
+  --surface: #FFFFFF;
 
-  /* 文字 */
-  --text-1: #17233d;
-  --text-2: #5c6b82;
-  --text-3: #9aa7ba;
-  --text-invert: #ffffff;
-  --placeholder: #b7c2d2;
+  /* === 文字 === */
+  --text-1: #1E293B;         /* 标题 */
+  --text-2: #64748B;         /* 正文 */
+  --text-3: #94A3B8;         /* 辅助/禁用 */
+  --text-invert: #FFFFFF;
+  --placeholder: #CBD5E1;
 
-  /* 线 & 阴影 */
-  --divider: rgba(23, 35, 61, 0.08);
-  --shadow-sm: 0 1px 2px rgba(23, 35, 61, 0.06);
-  --shadow-md: 0 6px 20px rgba(23, 35, 61, 0.08);
-  --shadow-lg: 0 16px 48px rgba(23, 35, 61, 0.14);
+  /* === 线 & 阴影 === */
+  --divider: rgba(148, 163, 184, 0.20);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.12);
 
-  /* 状态色 */
-  --success: #22c55e;
-  --success-soft: rgba(34, 197, 94, 0.14);
-  --warning: #f5a623;
-  --warning-soft: rgba(245, 166, 35, 0.15);
-  --danger: #ef5350;
-  --danger-soft: rgba(239, 83, 80, 0.12);
-  --info: #3b82f6;
-  --info-soft: rgba(59, 130, 246, 0.13);
+  /* === 状态色 === */
+  --success: #10B981;
+  --success-soft: rgba(16, 185, 129, 0.10);
+  --warning: #F59E0B;
+  --warning-soft: rgba(245, 158, 11, 0.10);
+  --danger: #EF4444;
+  --danger-soft: rgba(239, 68, 68, 0.10);
+  --info: #3B82F6;
+  --info-soft: rgba(59, 130, 246, 0.10);
 
-  /* 层级圆角 */
+  /* === 圆角 === */
   --r-xs: 6px;
   --r-sm: 10px;
   --r-md: 14px;
@@ -46,7 +49,7 @@
   --r-xl: 24px;
   --r-full: 999px;
 
-  /* 间距体系 4/8/12/16/20/24 */
+  /* === 间距 === */
   --sp-1: 4px;
   --sp-2: 8px;
   --sp-3: 12px;
@@ -54,7 +57,7 @@
   --sp-5: 20px;
   --sp-6: 24px;
 
-  /* 字体 */
+  /* === 字体 === */
   --font-base: -apple-system, BlinkMacSystemFont, "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
   --fs-10: 10px;
   --fs-12: 12px;
@@ -67,48 +70,49 @@
   --fs-24: 24px;
   --fs-28: 28px;
 
-  /* TabBar 高度区域 */
-  --tabbar-h: 54px;
+  /* === 导航 === */
+  --tabbar-h: 56px;
   --nav-h: 48px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 
   color-scheme: light;
 }
 
-/* 深色模式：重新调整背景层级、文字亮度、分割线、品牌色与状态色 */
+/* === 深色模式 === */
 html[data-theme='dark'] {
-  --brand: #5aa8ff;
-  --brand-strong: #7dbaff;
-  --brand-soft: rgba(90, 168, 255, 0.16);
-  --brand-grad: linear-gradient(135deg, #6db3ff 0%, #3f90f2 55%, #2c74d6 100%);
-  --accent: #3ed6aa;
-  --accent-soft: rgba(62, 214, 170, 0.16);
+  --brand: #6366F1;
+  --brand-strong: #818CF8;
+  --brand-soft: rgba(99, 102, 241, 0.15);
+  --brand-grad: linear-gradient(135deg, #818CF8 0%, #6366F1 50%, #4F46E5 100%);
+  --accent: #34D399;
+  --accent-soft: rgba(52, 211, 153, 0.15);
 
-  --bg: #0e1117;
-  --bg-elev: #151a23;
-  --card: #171d28;
-  --card-2: #1d2430;
-  --surface: #1b222e;
+  --bg: #0F172A;
+  --bg-elev: #1E293B;
+  --card: #1E293B;
+  --card-hover: #334155;
+  --surface: #1E293B;
 
-  --text-1: #eef2f8;
-  --text-2: #a6b1c3;
-  --text-3: #6d7889;
-  --text-invert: #fff;
-  --placeholder: #56617a;
+  --text-1: #F1F5F9;
+  --text-2: #94A3B8;
+  --text-3: #64748B;
+  --text-invert: #0F172A;
+  --placeholder: #475569;
 
-  --divider: rgba(238, 242, 248, 0.08);
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.36);
-  --shadow-lg: 0 18px 52px rgba(0, 0, 0, 0.5);
+  --divider: rgba(148, 163, 184, 0.12);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.20);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.30);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.40);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.50);
 
-  --success: #34d17c;
-  --success-soft: rgba(52, 209, 124, 0.16);
-  --warning: #ffb544;
-  --warning-soft: rgba(255, 181, 68, 0.16);
-  --danger: #ff6b68;
-  --danger-soft: rgba(255, 107, 104, 0.15);
-  --info: #62a9ff;
-  --info-soft: rgba(98, 169, 255, 0.16);
+  --success: #34D399;
+  --success-soft: rgba(52, 211, 153, 0.15);
+  --warning: #FBBF24;
+  --warning-soft: rgba(251, 191, 36, 0.15);
+  --danger: #F87171;
+  --danger-soft: rgba(248, 113, 113, 0.15);
+  --info: #60A5FA;
+  --info-soft: rgba(96, 165, 250, 0.15);
 
   color-scheme: dark;
 }

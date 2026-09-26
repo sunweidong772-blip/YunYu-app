@@ -9,34 +9,122 @@ const router = useRouter()
 </script>
 
 <template>
-  <div class="sw-card" @click="router.push('/software/' + app.id)">
-    <div class="sw-icon" :style="{ background: app.icon_color || 'var(--brand-soft)' }">{{ app.icon || '📦' }}</div>
-    <div class="sw-body grow">
-      <div class="sw-name" v-html="app.highlighted || app.name"></div>
-      <div class="sw-summary ellipsis">{{ app.summary }}</div>
-      <div class="sw-meta">
-        <span class="badge">{{ app.category_name || (app.category && app.category.name) || '分类' }}</span>
+  <div class="sw-row" @click="router.push('/software/' + app.id)">
+    <div class="sw-icon-wrap" :style="{ background: app.icon_color || 'var(--brand-soft)' }">
+      <span class="sw-emoji">{{ app.icon || '📦' }}</span>
+    </div>
+    <div class="sw-info">
+      <div class="sw-name-row">
+        <span class="sw-name" v-html="app.highlighted || app.name"></span>
         <span class="sw-ver" v-if="app.version">v{{ app.version }}</span>
       </div>
+      <p class="sw-desc ellipsis">{{ app.summary || '暂无简介' }}</p>
+      <div class="sw-tags">
+        <span class="sw-tag">{{ app.category_name || (app.category && app.category.name) || '分类' }}</span>
+        <span class="sw-tag secondary">{{ fmtNum(app.download_count) }} 下载</span>
+      </div>
     </div>
-    <div class="sw-stats">
-      <div class="sw-dl">{{ fmtNum(app.download_count) }} 下载</div>
-      <div class="sw-fav" v-if="app.favorite_count !== undefined">{{ fmtNum(app.favorite_count) }} 收藏</div>
+    <div class="sw-action">
+      <button class="sw-download" @click.stop>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+      </button>
     </div>
   </div>
 </template>
 
 <style scoped>
-.sw-card { display: flex; align-items: center; gap: 12px; padding: var(--sp-3) var(--sp-4); background: var(--card); margin-bottom: 2px; cursor: pointer; transition: background 0.15s ease; }
-.sw-card:nth-child(1) { border-radius: var(--r-md) var(--r-md) 0 0; }
-.sw-card:last-child { border-radius: 0 0 var(--r-md) var(--r-md); }
-.sw-icon { width: 46px; height: 46px; border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
-.sw-body { min-width: 0; }
-.sw-name { font-size: var(--fs-15); font-weight: 600; margin-bottom: 2px; }
-.sw-summary { font-size: var(--fs-12); color: var(--text-3); margin-bottom: 6px; }
-.sw-meta { display: flex; align-items: center; gap: 8px; }
-.sw-ver { font-size: var(--fs-11); color: var(--text-3); }
-.sw-stats { text-align: right; flex-shrink: 0; }
-.sw-dl { font-size: var(--fs-12); color: var(--text-2); font-weight: 600; }
-.sw-fav { font-size: var(--fs-11); color: var(--text-3); margin-top: 2px; }
+.sw-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--card);
+  cursor: pointer;
+  transition: background 0.15s ease;
+  border-bottom: 1px solid var(--divider);
+}
+.sw-row:last-child {
+  border-bottom: none;
+}
+.sw-row:active {
+  background: var(--bg-elev);
+}
+
+.sw-icon-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--r-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.sw-emoji {
+  font-size: 26px;
+}
+
+.sw-info {
+  flex: 1;
+  min-width: 0;
+}
+.sw-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.sw-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+.sw-ver {
+  font-size: 11px;
+  color: var(--text-3);
+  background: var(--bg-elev);
+  padding: 1px 7px;
+  border-radius: var(--r-full);
+  font-weight: 500;
+}
+.sw-desc {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-bottom: 6px;
+}
+.sw-tags {
+  display: flex;
+  gap: 6px;
+}
+.sw-tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: var(--r-full);
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-weight: 500;
+}
+.sw-tag.secondary {
+  background: var(--bg-elev);
+  color: var(--text-3);
+}
+
+.sw-action {
+  flex-shrink: 0;
+}
+.sw-download {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--brand-soft);
+  color: var(--brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+.sw-download:active {
+  background: var(--brand);
+  color: #fff;
+  transform: scale(0.92);
+}
 </style>
