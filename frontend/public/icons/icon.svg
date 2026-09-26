@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- 云屿标准图标源稿（与启动页 Logo 造型一致：白色云朵 + 蓝色小岛 + 白色水波，圆角方块）-->
+  <defs>
+    <linearGradient id="yx-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6FB7FF"/>
+      <stop offset="0.55" stop-color="#2F8CFF"/>
+      <stop offset="1" stop-color="#1E6FD6"/>
+    </linearGradient>
+    <clipPath id="yx-round"><rect x="0" y="0" width="512" height="512" rx="114" ry="114"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#yx-round)">
+    <!-- 品牌渐变底 -->
+    <rect width="512" height="512" fill="url(#yx-bg)"/>
+
+    <!-- 中央毛玻璃圆角方块（启动页 92×92 方块等比放大） -->
+    <rect x="81" y="81" width="350" height="350" rx="99" ry="99" fill="rgba(255,255,255,0.16)" stroke="rgba(255,255,255,0.35)" stroke-width="2"/>
+
+    <!-- 白色描边云朵（启动页同一 path，viewBox 24 → 放大 167/24） -->
+    <g transform="translate(172.5, 130)">
+      <svg width="167" height="167" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M7 18a4 4 0 0 1-.5-8A4.5 4.5 0 0 1 15 9a3.5 3.5 0 0 1 .7 6.9"/>
+      </svg>
+    </g>
+
+    <!-- 蓝色小岛 -->
+    <ellipse cx="256" cy="350" rx="76" ry="38" fill="#2F8CFF"/>
+
+    <!-- 白色水波圆点 -->
+    <circle cx="179.7" cy="400.8" r="15" fill="rgba(255,255,255,0.85)"/>
+    <circle cx="231.2" cy="400.8" r="20.9" fill="rgba(255,255,255,0.85)"/>
+    <circle cx="276.9" cy="400.8" r="13.3" fill="rgba(255,255,255,0.85)"/>
+  </g>
+</svg>

@@ -1,0 +1,19 @@
+{
+  "appId": "com.yunyu.app",
+  "appName": "云屿",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https",
+    "url": "http://localhost:3000",
+    "cleartext": true
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 3000,
+      "launchAutoHide": true,
+      "backgroundColor": "#2F8CFF",
+      "androidScaleType": "CENTER_CROP"
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "yunyu-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "云屿 - 软件聚合社区 App",
+  "scripts": {
+    "setup": "npm --prefix backend install && npm --prefix frontend install",
+    "dev": "concurrently -n backend,frontend -c blue,green \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"",
+    "start": "npm --prefix backend run start",
+    "build": "npm --prefix frontend run build && npm --prefix backend run start"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

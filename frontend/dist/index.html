@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#2F8CFF" />
+  <meta name="description" content="云屿 YunYu - 发现优质软件，分享实用工具，软件聚合社区" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <title>云屿 YunYu · 软件聚合社区</title>
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; }
+    #app { height: 100%; }
+    .skeleton-screen {
+      position: fixed; inset: 0; z-index: 9999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+      background: linear-gradient(135deg, #6FB7FF 0%, #2F8CFF 100%);
+      transition: opacity .35s ease;
+    }
+    .skeleton-logo {
+      width: 72px; height: 72px; border-radius: 20px;
+      background: rgba(255,255,255,.25);
+      backdrop-filter: blur(4px);
+      animation: skeletonPulse 1.6s ease-in-out infinite;
+    }
+    .skeleton-text {
+      color: #fff; font-size: 22px; font-weight: 700; letter-spacing: 4px;
+      text-shadow: 0 2px 8px rgba(0,0,0,.12);
+      animation: skeletonFade 1.6s ease-in-out infinite;
+    }
+    @keyframes skeletonPulse {
+      0%, 100% { transform: scale(1); opacity: .6; }
+      50% { transform: scale(1.06); opacity: 1; }
+    }
+    @keyframes skeletonFade {
+      0%, 100% { opacity: .5; }
+      50% { opacity: 1; }
+    }
+  </style>
+  <script type="module" crossorigin src="/assets/index-HaQ2_eR9.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-BZLvv8BU.css">
+</head>
+<body>
+  <div id="app">
+    <div class="skeleton-screen" id="skeleton">
+      <div class="skeleton-logo"></div>
+      <div class="skeleton-text">云屿</div>
+    </div>
+  </div>
+</body>
+</html>

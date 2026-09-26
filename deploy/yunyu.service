@@ -1,0 +1,28 @@
+[Unit]
+Description=YunYu (云屿) App Backend - 软件聚合社区
+Documentation=https://github.com/your-org/yunyu-app
+After=network.target
+
+[Service]
+Type=simple
+# 生产环境：后端直接托管前端构建产物 frontend/dist，
+# 因此只需运行后端单个 Node 进程即可对外提供完整服务。
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/yunyu-app/backend
+# 读取 /opt/yunyu-app/backend/.env 中的环境变量（也支持直接写 Environment= 行）
+EnvironmentFile=/opt/yunyu-app/backend/.env
+# 配置缺失时回退安全默认值（不覆盖真实环境）
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node src/server.js
+Restart=always
+RestartSec=3
+# 基础安全加固
+NoNewPrivileges=true
+ProtectSystem=full
+PrivateTmp=true
+# 数据库写入 backend/data
+ReadWritePaths=/opt/yunyu-app/backend/data
+
+[Install]
+WantedBy=multi-user.target
