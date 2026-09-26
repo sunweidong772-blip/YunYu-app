@@ -5,14 +5,16 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-  workflow_dispatch:
+  workflow_dispatch:  # 允许手动触发
 
 jobs:
   build-apk:
     runs-on: ubuntu-latest
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
@@ -21,76 +23,87 @@ jobs:
         cache-dependency-path: |
           frontend/package-lock.json
           backend/package-lock.json
+    
     - name: Setup JDK
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
+    
     - name: Setup Android SDK
       run: |
         echo "ANDROID_HOME=$ANDROID_HOME"
-        ls -la $ANDROID_HOME/cmdline-tools/bin/ 2>/dev/null || true
+        echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
         sdkmanager --list_installed 2>/dev/null || true
+        sdkmanager "platforms;android-33" "build-tools;33.0.0" 2>/dev/null || true
+      env:
+        ANDROID_HOME: ${{ env.ANDROID_HOME }}
+    
     - name: Install frontend dependencies
       working-directory: ./frontend
       run: npm install
+    
     - name: Build frontend
       working-directory: ./frontend
       run: npm run build
+    
     - name: Sync Capacitor Android
       working-directory: ./frontend
       run: npx cap sync android
+    
     - name: Build Android Debug APK
       working-directory: ./frontend/android
       run: ./gradlew assembleDebug
-    - name: Build Android Release APK
+    
+    - name: Build Android Release APK (signed with debug key)
       working-directory: ./frontend/android
       run: ./gradlew assembleRelease
+    
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
       with:
         name: app-debug
         path: frontend/android/app/build/outputs/apk/debug/app-debug.apk
         retention-days: 30
-    - name: Upload Release APK
+    
+    - name: Upload Release APK (signed)
       uses: actions/upload-artifact@v4
       with:
-        name: app-release-unsigned
-        path: frontend/android/app/build/outputs/apk/release/app-release-unsigned.apk
+        name: app-release
+        path: frontend/android/app/build/outputs/apk/release/app-release.apk
         retention-days: 30
+    
     - name: Show APK info
       run: |
         echo "=== Debug APK ==="
         ls -lh frontend/android/app/build/outputs/apk/debug/
         echo "=== Release APK ==="
         ls -lh frontend/android/app/build/outputs/apk/release/
+        echo "=== Verify Release APK signature ==="
+        cd frontend/android
+        ./gradlew :app:signingReport 2>/dev/null || true
+
+  # 可选：发布到 GitHub Release（APK 已在 build-apk 阶段用 debug 签名）
   release:
     needs: build-apk
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    permissions:
+      contents: write
+    
     steps:
     - name: Download Release APK
       uses: actions/download-artifact@v4
       with:
-        name: app-release-unsigned
+        name: app-release
         path: ./apk
-    - name: Sign APK
-      uses: r0adkll/sign-android-release@v1
-      env:
-        SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
-        SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
-        SIGNING_KEYSTORE: ${{ secrets.SIGNING_KEYSTORE }}
-        SIGNING_KEYSTORE_PASSWORD: ${{ secrets.SIGNING_KEYSTORE_PASSWORD }}
+    
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
       with:
-        releaseDirectory: ./apk
-        signingKeyBase64: ${{ secrets.SIGNING_KEYSTORE }}
-        alias: ${{ secrets.SIGNING_KEY_ALIAS }}
-        keyStorePassword: ${{ secrets.SIGNING_KEYSTORE_PASSWORD }}
-        keyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
-      id: sign_app
-    - name: Upload Signed APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-release-signed
-        path: ${{ steps.sign_app.outputs.signedReleaseFile }}
-        retention-days: 90
+        tag_name: v${{ github.run_number }}
+        name: "云屿 Release v${{ github.run_number }}"
+        draft: false
+        files: |
+          apk/app-release.apk

@@ -17,6 +17,8 @@ android {
     buildTypes {
         release {
             minifyEnabled false
+            // 临时用 debug 签名保证 release APK 可直接安装（上架前需替换正式签名）
+            signingConfig signingConfigs.debug
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
