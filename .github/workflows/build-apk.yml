@@ -31,7 +31,22 @@ jobs:
           java-version: '17'
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          ls -la $ANDROID_HOME || true
+          ls -la $ANDROID_SDK_ROOT || true
+          # Use pre-installed Android SDK on ubuntu-latest
+          if [ -d "/usr/local/lib/android/sdk" ]; then
+            export ANDROID_HOME=/usr/local/lib/android/sdk
+            export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
+          elif [ -d "/opt/android-sdk" ]; then
+            export ANDROID_HOME=/opt/android-sdk
+            export ANDROID_SDK_ROOT=/opt/android-sdk
+          fi
+          # Accept licenses and install required components
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools" || true
 
       - name: Build APK
         working-directory: yunyu-web/android
