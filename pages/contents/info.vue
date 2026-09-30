@@ -1,0 +1,3129 @@
+<template>
+	<view class="user" :class="$store.state.AppStyle">
+		<view class="header" :style="[{height:CustomBar + 'px'}]">
+			<view class="cu-bar bg-white" :style="{'height': CustomBar + 'px','padding-top':StatusBar + 'px'}">
+				<!--  #ifdef H5 || APP-PLUS -->
+				<view class="action">
+					<text class="cuIcon-back" @tap="back"></text>
+					<view class="flex text-left" style="opacity: 0;" :style="{'opacity':display}">
+						<view class="cu-avatar round" v-if="display==1" :style="userInfo.style" @tap="toUserInfo(userInfo)"></view>
+					</view>
+				</view>
+				<!--  #endif -->
+				<!--  #ifdef MP -->
+				<view class="action" @tap="backHome">
+					<text class="cuIcon-home"></text>
+				</view>
+				<!--  #endif -->
+				<view class="action info-btn" :style="[{top:StatusBar + 'px'}]">
+					<!-- 帖子详情 content text-bold-->
+					<view class="content text-bold flex align-center justify-center" :style="[{top:StatusBar + 'px'}]">
+						<view class="text-shojo round" style="background-color: #fb72992e;"
+							:style="{'opacity':opacityNum}">
+							<text v-if="category.length>0" @tap="toCategoryContents(category)"
+								style="font-size: initial;"
+								class="padding-lr-lg padding-tb-xs">{{category[0].name}}</text>
+							<text class="text-gray" v-if="category.length==0">暂无分类</text>
+						</view>
+					</view>
+				</view>
+				<view class="action info-btn">
+					<!--  #ifdef H5 || APP-PLUS -->
+					<!-- <text class="cuIcon-search"  @tap="toSearch"></text> -->
+					<view class="cu-modal bottom-modal" :class="modalName=='bottomModal'?'show':''" @tap="hideModal">
+						<view class="cu-dialog">
+							<view class="cu-bar bg-white">
+								<view class="action text-blue" @tap="hideModal">取消</view>
+								<view class="action text-green">确定</view>
+							</view>
+							<view class="padding-xl" style="font-size: medium;">
+								<block v-if="authorId==uid || group=='administrator'">
+									<view class="padding-sm	">
+										<text class="cuIcon-delete" @tap="toDeletePost(cid)">删除</text>
+									</view>
+									<view>
+										<text class="cuIcon-edit" @tap="goPost(cid)">编辑</text>
+									</view>
+								</block>
+								<!-- <block v-if="group=='administrator'||group=='editor'"> -->
+								<block >
+									<view class="padding-sm">
+										<text class="cuIcon-unlock" v-if="tzlock"
+											@tap="rmLock(cid)">取消锁定</text>
+										<text class="cuIcon-lock" v-else
+											@tap="addLock(cid)">锁定</text>
+									</view>
+									<view>
+										<text class="cuIcon-pulldown" v-if="istop==2"
+											@tap="rmTop(cid)">取消版块置顶</text>
+										<text class="cuIcon-top" v-else
+											@tap="addTopb(cid)">版块置顶</text>
+									</view>
+								</block>
+								<!-- <block v-if="group=='administrator'"> -->
+								<block>
+									<view class="padding-sm">
+										<text class="cuIcon-list" v-if="isrecommend"
+											@tap="rmRecommend(cid)">取消推荐</text>
+										<text class="cuIcon-list" v-else
+											@tap="addRecommend(cid)">推荐</text>
+									</view>
+									<view>
+										<text class="cuIcon-top" v-if="istop==3"
+											@tap="rmTop(cid)">取消全局置顶</text>
+										<text class="cuIcon-pulldown" v-else
+											@tap="addTop(cid)">全局置顶</text>
+									</view>
+									<!-- <view>
+										<text class="cuIcon-album text-green radius" v-if="isswiper==0"
+											@tap="addSwiper(cid)">轮播{{isswiper}}</text>
+										<text class="cuIcon-album text-grey radius" v-else @tap="rmSwiper(cid)">取消轮播{{isswiper}}</text>
+									</view> -->
+
+								</block>
+								<block v-if="uid==0">
+									<view class="padding-sm	">
+										<text class="text-bold">请登录</text>
+									</view>
+								</block>
+							</view>
+						</view>
+					</view>
+					<!--  #endif -->
+				</view>
+				<view class="action info-btn">
+					<view class="padding-right-sm" style="opacity: 0;" :style="{'opacity':display}">
+						<block v-if="authorId!=uid">
+							<text class="text-gray padding-lr-lg padding-tb-xs round"
+								style="background-color: #9999992e;" @tap="follow(0)"
+								v-if="isFollow==1&&display==1">已关注</text>
+							<text class="text-shojo padding-lr-lg padding-tb-xs round"
+								style="background-color: #FB72992e;" @tap="follow(1)" v-else-if="display==1">关注</text>
+						</block>
+					</view>
+					<text class="cuIcon-more" @tap="showModal" data-target="bottomModal"></text>
+				</view>
+			</view>
+		</view>
+		<view :style="[{padding:NavBar + 'px 10px 0px 10px'}]"></view>
+		<view class="info" style="margin-top: 20upx;">
+			<view class="info-title">
+				<text class="tz-tag margin-right-xs" style="backgroundColor:#ff0000"
+					v-if="rewardAmount > 0 ">+{{rewardAmount}}</text>
+				<text class="tz-tag margin-right-xs" style="backgroundColor:#e51212"
+					v-if="commentsNum >= 200">热</text>
+				<text class="tz-tag margin-right-xs" style="backgroundColor:#9da7aa"
+					v-if="tzlock == 1">锁</text>
+				<text>{{replaceSpecialChar(title)}}</text>
+			</view>
+			<view class="info-tyle">
+				<view class="cu-tag data-author"><text class="cuIcon-attention"></text>{{formatNumber(views)}}</view>
+				<view class="cu-tag data-author"><text class="cuIcon-appreciate"></text>{{likes}}</view>
+				<view class="cu-tag data-author"><text class="cuIcon-comment"></text>{{commentsNum}}</view>
+				<text class="info-date cu-tag data-author" v-if="created!=''">{{formatDate(created)}}</text>
+			</view>
+			<view class="info-tyle">
+				<view class="info-author">
+					
+				</view>
+				<view class="cu-list menu-avatar ">
+					<view class="cu-item">
+						<view class="cu-avatar round lg" :style="userInfo.style" @tap="toUserInfo(userInfo)"></view>
+						<view class="content">
+							<view class="text-grey">
+								<block v-if="userInfo.screenName">
+									<!-- vip -->
+									<text v-if="userInfo.isvip==1" class="content-author-name tn-text-bold"
+										style="color: #f2ad5c;">
+										{{userInfo.screenName}}
+									</text>
+									<text v-else-if="userInfo.isvip==2" class="content-author-name text-blue"
+										style="color: #e6216d;">
+										{{userInfo.screenName}}
+									</text>
+									<text v-else class="content-author-name tn-text-bold" :style="{color:userInfo.screenNamecolor}">
+										{{userInfo.screenName}}
+									</text>
+								</block>
+								<block v-else>
+									<!-- vip -->
+									<text v-if="userInfo.isvip==1" class="content-author-name tn-text-bold"
+										style="color: #f2ad5c;">
+										{{userInfo.name}}
+									</text>
+									<text v-else-if="userInfo.isvip==2" class="content-author-name text-blue"
+										style="color: #e6216d;">
+										{{userInfo.name}}
+									</text>
+									<text v-else class="content-author-name tn-text-bold" :style="{color:userInfo.screenNamecolor}">
+										{{userInfo.name}}
+									</text>
+									<!-- vip -->
+								</block>
+							</view>
+							<!--  #ifdef H5 || APP-PLUS -->
+							<block v-if="userInfo.isvip==1">
+								<!-- <text class="userlv"
+									style="margin-left: 0px;background: linear-gradient(to bottom right, #f2ad5c, #e6216d,#901ccb);color:white;padding: 2upx 10upx;border-radius: 20upx;">
+									VIP
+								</text> -->
+							</block>
+							<text class="userlv" :style="getLvStyle(userInfo.experience)">
+								{{getLv(userInfo.experience)}}
+							</text>
+							<!--  #endif -->
+							<text class="group customize adm" v-if="userInfo.group=='administrator'">
+								管理员
+							</text>
+							<text class="group customize" v-if="userInfo.group=='editor'">
+								编辑
+							</text>
+							<!-- <text class="group purview" style="color: #fff;" v-if="purview>1">
+								  {{getRestrictList(purview-1).name}}
+							</text> -->
+							<text class="group" :style="{backgroundColor:userInfo.customizecolor}"
+								v-if="userInfo.customize&&userInfo.customize!=''">
+								{{userInfo.customize}}
+							</text>
+							<!-- 个人介绍 -->
+							<!-- <view class="text-gray text-sm flex"> 
+								<view class="text-cut">
+									{{subText(userInfo.introduce,60)}}
+								</view>
+							</view> -->
+
+						</view>
+						<!-- <view class="action goUserIndex">
+							<button class="cu-btn isFollow" @tap="follow(0)" v-if="isFollow==1">已关注</button>
+							<button class="cu-btn unFollow" @tap="follow(1)" v-else><text class="cuIcon-add"></text>关注</button>
+							
+						</view> -->
+						<!-- <text class="text-green margin-left-sm">楼主</text> -->
+						<image class="stamp" src="/static/stamp/005.gif" v-if="istop"></image>
+						<image class="stamp" src="/static/stamp/006.gif" v-else-if="isrecommend"></image>
+					</view>
+				</view>
+			</view>
+			<view class="info-content">
+
+				<!-- <joMarkdown :nodes="markdownData"></joMarkdown> -->
+				<block v-if="markdown==1">
+					<mp-html :content="html" :selectable="true" :show-img-menu="true" :scroll-table="true"
+						:markdown="true" :lazyLoad="true" />
+				</block>
+				<block v-if="markdown==0">
+					<mp-html :content="html" :selectable="true" :show-img-menu="true" :scroll-table="true"
+						:lazyLoad="true" :markdown="false" />
+				</block>
+
+				<view class="shop-value" v-if="shopValue!=''">
+					<view class="shop-value-title">
+						付费内容
+					</view>
+					<block v-if="shopIsMd==1">
+						<mp-html :content="shopValue" :selectable="true" :show-img-menu="true" :scroll-table="true"
+							:markdown="true" />
+					</block>
+					<block v-if="shopIsMd==0">
+						<mp-html :content="shopValue" :selectable="true" :show-img-menu="true" :scroll-table="true"
+							:markdown="false" />
+					</block>
+
+				</view>
+				<view class="content-shop" v-if="shopValue==''">
+					<view class="cu-card article no-card" v-for="(item,index) in shopList" :key="index">
+						<block v-if="item.type==1">
+							<view class="shop-tool text-center">
+								<view class="shop-name">
+									实体商品
+								</view>
+								<image :src="item.imgurl" mode="aspectFill"></image>
+								<view class="text-content">{{item.title}}</view>
+								<view class="tool-price" v-if="isBuy==0">
+									<text class="text-red text-bold">{{item.price}} {{currencyName}}</text><text
+										class="margin-left-sm text-sm">VIP只需</text><text
+										class="text-yellow text-bold">{{parseInt(item.price * item.vipDiscount)}}
+										{{currencyName}}</text>
+								</view>
+								<view class="tool-price">
+									<text class="cu-btn bg-blue" @tap="shopBuy(item.id,item.type)">立即下单</text>
+									<text class="cu-btn text-red" @tap="shopInfo(item)">商品详情</text>
+								</view>
+							</view>
+						</block>
+						<!--源码-->
+						<block v-if="item.type==2">
+							<view class="shop-tool text-center">
+								<view class="shop-name">
+									源码
+								</view>
+								<image :src="item.imgurl" mode="aspectFill"></image>
+								<view class="text-content">{{item.title}}</view>
+								<view class="tool-price" v-if="isBuy==0">
+									<text class="text-red text-bold">{{item.price}} {{currencyName}}</text><text
+										class="margin-left-sm text-sm">VIP只需</text><text
+										class="text-yellow text-bold">{{parseInt(item.price * item.vipDiscount)}}
+										{{currencyName}}</text>
+								</view>
+								<view class="tool-price" v-if="isBuy==1">
+									<text class="cu-btn bg-blue" @tap="toShopValue(item.id,item.type)">查看收费内容</text>
+									<text class="cu-btn text-red" @tap="shopInfo(item)">商品详情</text>
+								</view>
+								<view class="tool-price" v-else>
+									<text class="cu-btn bg-blue" @tap="shopBuy(item.id,item.type)">购买后下载</text>
+									<text class="cu-btn text-red" @tap="shopInfo(item)">商品详情</text>
+								</view>
+							</view>
+						</block>
+						<!--工具-->
+						<block v-if="item.type==3">
+							<view class="shop-tool text-center">
+								<view class="shop-name">
+									软件工具
+								</view>
+								<image :src="item.imgurl" mode="aspectFill"></image>
+								<view class="text-content">{{item.title}}</view>
+								<view class="tool-price" v-if="isBuy==0">
+									<text class="text-red text-bold">{{item.price}} {{currencyName}}</text><text
+										class="margin-left-sm text-sm">VIP只需</text><text
+										class="text-yellow text-bold">{{parseInt(item.price * item.vipDiscount)}}
+										{{currencyName}}</text>
+								</view>
+								<view class="tool-price" v-if="isBuy==1">
+									<text class="cu-btn bg-blue" @tap="toShopValue(item.id,item.type)">查看收费内容</text>
+									<text class="cu-btn text-red" @tap="shopInfo(item)">商品详情</text>
+								</view>
+								<view class="tool-price" v-else>
+									<text class="cu-btn bg-blue" @tap="shopBuy(item.id,item.type)">购买后下载</text>
+									<text class="cu-btn text-red" @tap="shopInfo(item)">商品详情</text>
+								</view>
+							</view>
+						</block>
+						<!--付费阅读-->
+						<block v-if="item.type==4">
+							<view class="shop-tool text-center">
+								<view class="shop-name">
+									付费阅读
+								</view>
+								<view class="tool-price" v-if="isBuy==0">
+									<text class="text-red text-bold">{{item.price}} {{currencyName}}</text><text
+										class="margin-left-sm text-sm">VIP只需</text><text
+										class="text-yellow text-bold">{{parseInt(item.price * item.vipDiscount)}}
+										{{currencyName}}</text>
+								</view>
+								<view class="tool-price" v-if="isBuy==1">
+									<text class="cu-btn bg-blue" @tap="toShopValue(item.id,item.type)">查看收费内容</text>
+								</view>
+								<view class="tool-price" v-else>
+									<text class="cu-btn bg-blue" @tap="shopBuy(item.id,item.type)">购买后阅读剩余内容</text>
+								</view>
+							</view>
+						</block>
+					</view>
+				</view>
+				<view class="flex justify-end">
+					<view class="info-date text-xs" v-if="">最后编辑于{{formatDate(modified)}}</view>
+				</view>
+				<!--  #ifdef MP -->
+				<view class="content-btn grid col-2">
+
+					<view class="content-btn-box">
+						<view class="content-btn-i" @tap="toLikes" v-if="isLikes==0">
+							<text class="cuIcon-appreciate btn-i"></text>
+							<text>点赞( {{formatNumber(likes)}} )</text>
+						</view>
+						<view class="content-btn-i" @tap="toLikes" v-else>
+							<text class="cuIcon-appreciatefill text-blue btn-i"></text>
+							<text>点赞( {{formatNumber(likes)}} )</text>
+						</view>
+					</view>
+					<view class="content-btn-box" @tap="toMark" v-if="isMark==0">
+						<view class="content-btn-i">
+							<text class="cuIcon-favor btn-i"></text>
+							<text>收藏</text>
+						</view>
+					</view>
+					<view class="content-btn-box" @tap="rmMark" v-else>
+						<view class="content-btn-i">
+							<text class="cuIcon-favorfill btn-i"></text>
+							<text>已收藏</text>
+						</view>
+					</view>
+				</view>
+				<!--  #endif -->
+				<view class="tags" v-if="tagList.length>0">
+					<text class="tags-box" v-for="(item,index) in tagList"
+						@tap='toTagsContents("#"+item.name+"#",item.mid)' :key="index">
+						{{item.name}}
+					</text>
+
+				</view>
+			</view>
+			<!--  #ifdef H5 || APP-PLUS -->
+			<view class="reward-log" v-if="rewardAmount > 0" @tap="goReward(cid)">
+				<view class="reward-log-main">
+					<view class="reward-log-box reward-total">
+						<view class="reward-log-i">
+							<text class="cuIcon-recharge"></text>
+						</view>
+						<view class="reward-log-value">
+							+{{rewardAmount}}
+						</view>
+					</view>
+					<view class="reward-log-box" v-for="(item,index) in rewardLog">
+						<view class="reward-log-i">
+							<image class="cu-avatar round sm" :src="item.userJson.avatar"></image>
+						</view>
+						<view class="reward-log-value">
+							{{item.num}}
+						</view>
+					</view>
+
+				</view>
+				<view class="reward-log-btn" @tap="goReward(cid)">
+					<text class="cuIcon-more"></text>
+				</view>
+			</view>
+			<!--  #endif -->
+			<view class="ads-banner" v-if="bannerAdsInfo!=null">
+				<image :src="bannerAdsInfo.img" mode="widthFix" @tap="goAds(bannerAdsInfo)"></image>
+			</view>
+			<view class="data-box" v-if="isComment==1">
+				<view class="info-tyle">
+					<view class="cu-bar bg-white">
+						<view class="action data-box-title">
+							<text class="cuIcon-titles text-rule"></text> 评论 <text
+								v-if="commentsNum>0">{{commentsNum}}</text>
+						</view>
+						
+						<view class="square-data-type">
+							<text :class="DataType==0?'cur':''" @tap="setDataType(0,true)">楼主</text>
+							<text :class="DataType==1?'cur':''" @tap="setDataType(1,true)">最早</text>
+							<text :class="DataType==2?'cur':''" @tap="setDataType(2,true)">回复</text>
+							<!-- <text :class="DataType==3?'cur':''" @tap="setDataType(3,true)">获赞</text> -->
+						</view>
+					</view>
+				</view>
+				<view class="no-data" v-if="commentsList.length==0 & commentsNum==0">
+					暂时没有评论
+				</view>
+				<view class="cu-card dynamic no-card info-comment" style="margin-top: 20upx;">
+					<block v-for="(item,index) in topcommentsList" :key="index" v-if="topcommentsList.length>0">
+						<commentItem :item="item" :isContent="true" :aid="aid"></commentItem>
+					</block>
+				</view>
+				<view class="cu-card dynamic no-card info-comment" style="margin-top: 20upx;">
+					<block v-for="(item,index) in commentsList" :key="index" v-if="commentsList.length>0">
+						<commentItem :item="item" :isContent="true" :aid="aid" :floorNunber="index+1"></commentItem>
+					</block>
+				</view>
+				<view class="load-more" @tap="loadMore" v-if="commentsList.length>0">
+					<text> {{moreText}} </text>
+				</view>
+				<view style="height: 100upx"></view>
+			</view>
+		</view>
+		
+		
+		<!--  #ifdef H5 || APP-PLUS -->
+		<!--打赏选择-->
+		<view class="cu-modal bottom-modal" :class="modalName=='ChooseModal'?'show':''" @tap="hideModal">
+			<view class="cu-dialog" @tap.stop="">
+				<view class="cu-bar bg-white">
+					<view class="action text-blue" @tap="hideModal">取消</view>
+					<view class="action text-green" @tap="toReward">确定</view>
+				</view>
+				<view class="grid col-3 padding-sm">
+					<view v-for="(item,index) in checkbox" class="padding-xs" :key="index">
+						<button class="cu-btn orange lg block" :class="item.checked?'bg-orange':'line-orange'"
+							@tap="ChooseCheckbox(index)"> {{item.num}}{{currencyName}}
+							<view class="cu-tag sm round" :class="item.checked?'bg-white text-orange':'bg-orange'"
+								v-if="item.hot">HOT</view>
+						</button>
+					</view>
+				</view>
+			</view>
+		</view>
+		<!--  #endif -->
+		<!--加载遮罩-->
+		<view class="loading" v-if="isLoading==0">
+			<view class="loading-main">
+				<image src="../../static/loading.gif"></image>
+			</view>
+		</view>
+		<!--加载遮罩结束-->
+		<!--  #ifdef H5 || APP-PLUS -->
+		<view class="info-operate-bg" :class="isShare?'show':''" @tap="isShare=false"></view>
+		<view class="info-operate" :class="isShare?'show':''">
+			<view class="info-operate-main grid col-3">
+				<view class="index-sort-box">
+					<view class="index-sort-main" @tap="toLink('../space/post?type=1&toid='+cid)">
+						<view class="index-sort-i" style="background: rgba(21, 159, 44, 0.2);">
+							<text class="cuIcon-creativefill" style="color:  #159f2c;"></text>
+						</view>
+						<view class="index-sort-text">
+							分享到动态
+						</view>
+					</view>
+				</view>
+				<view class="index-sort-box" @tap="goImgShare">
+					<view class="index-sort-main">
+						<view class="index-sort-i" style="background: rgba(255, 51, 51, 0.2);">
+							<text class="cuIcon-picfill" style="color:  #ff3333"></text>
+						</view>
+						<view class="index-sort-text">
+							分享海报
+						</view>
+					</view>
+				</view>
+				<view class="index-sort-box">
+					<view class="index-sort-main" @tap="ToShare">
+						<view class="index-sort-i" style="background: rgba(30, 134, 231, 0.2);">
+							<text class="cuIcon-share" style="color:  #1e86e7;"></text>
+						</view>
+						<view class="index-sort-text">
+							分享到其他应用
+						</view>
+					</view>
+				</view>
+			</view>
+
+		</view>
+		<view class="info-footer grid col-2" :style="{'padding-bottom': paddingBottomHeight + 'upx'}">
+			
+			<view class="info-footer-btn action header-btn">
+				<text class="cuIcon-appreciate" @tap="toLikes" v-if="isLikes==0"></text>
+				<text class="cuIcon-appreciatefill" @tap="toLikes" v-else></text>
+				<text class="cuIcon-favor" @tap="toMark" v-if="isMark==0"></text>
+				<text class="cuIcon-favorfill" @tap="rmMark" v-else></text>
+				<text class="cuIcon-recharge" @tap="showModal" data-target="ChooseModal"></text>
+				<text class="cuIcon-share" @tap="isShare=!isShare"></text>
+			
+			</view>
+			<view class="info-footer-input" style="border-radius: 50%;"
+				v-if="tzlock==0||group=='administrator'|| group=='editor'">
+				<view class="info-input-box" @tap="commentsAdd(title,0,0)" @click="showComment = true" style="border-radius: 40upx;">
+					
+					<text class="cuIcon-writefill" v-if="tzlock==0">发表评论</text>
+					<text class="cuIcon-writefill" v-if="tzlock==1">已锁定</text>
+				</view>
+			</view>
+			<view class="info-footer-input" style="border-radius: 50%;" v-else>
+				<view class="info-input-box" style="border-radius: 40upx;">
+					<text class="cuIcon-writefill">已锁定</text>
+				</view>
+			</view>
+
+
+		</view>
+		<!--  #endif -->
+		<!-- 	name: String,
+		title: String,
+		intro:String,
+		time: String,
+		imgUrl:String,
+		href: String,
+		webName: String, -->
+		<template v-if="isImgShare">
+			<Share :name="imgShare.name" :title="imgShare.title" :intro="imgShare.intro" :time="imgShare.time"
+				:href="imgShare.href" :imgUrl="imgShare.imgUrl" :webName="imgShare.webName"
+				@closeImgShare="closeImgShare" />
+		</template>
+	
+	</view>
+</template>
+<script>
+	// import uParse from "@/components/feng-parse/parse.vue"
+	import mpHtml from '@/components/mp-html/mp-html'
+
+	import {
+		localStorage
+	} from '../../js_sdk/mp-storage/mp-storage/index.js'
+	// #ifdef APP-PLUS
+	import owo from '../../static/app-plus/owo/OwO.js'
+	// #endif
+	// #ifdef H5
+	import owo from '../../static/h5/owo/OwO.js'
+	import {
+		Comment
+	} from "vue";
+	// #endif
+	// #ifdef MP
+	var owo = [];
+	// #endif
+	export default {
+		data() {
+			return {
+				StatusBar: this.StatusBar,
+				CustomBar: this.CustomBar,
+				NavBar: this.StatusBar + this.CustomBar,
+				AppStyle: this.$store.state.AppStyle,
+				paddingBottomHeight: 0, //苹果X以上手机底部适配高度
+				cid: 0,
+				uid: 0,
+				title: "",
+				html: "",
+				commentsNum: 0,
+				category: [],
+				created: '',
+				markdown: -1,
+				markdownData: {},
+				userInfo: {},
+				slug: "",
+				tagList: [],
+				commentsList: [],
+				// 
+				
+				// 
+				shopIsMd: -1,
+				moreText: "加载更多",
+				page: 1,
+
+				isLoad: 0,
+
+				isLoading: 0,
+
+				isMark: 0,
+				logid: -1,
+
+				token: "",
+
+				likes: 0,
+				views: 0,
+				isLikes: 0,
+
+				type: "post",
+
+				shopList: [],
+				shopID: -1,
+				owo: owo,
+				owoList: [],
+
+				isCommnet: 0,
+
+				modalName: null,
+				checkbox: [{
+					value: 0,
+					name: '5积分',
+					num: 5,
+					checked: false,
+					hot: false,
+				}, {
+					value: 1,
+					name: '10积分',
+					num: 10,
+					checked: false,
+					hot: false,
+				}, {
+					value: 2,
+					name: '30积分',
+					num: 30,
+					checked: false,
+					hot: false,
+				}, {
+					value: 3,
+					name: '50积分',
+					num: 50,
+					checked: false,
+					hot: false,
+				}, {
+					value: 4,
+					name: '100积分',
+					num: 100,
+					checked: false,
+					hot: false,
+				}, {
+					value: 5,
+					name: '200积分',
+					num: 200,
+					checked: false,
+					hot: false,
+				}],
+				ads: "",
+				userlvStyle: "",
+				vipDiscount: 0,
+				vipPrice: 0,
+				scale: 0,
+
+				isBuy: 0,
+				shopValue: "",
+
+				bannerAds: [],
+				bannerAdsInfo: null,
+
+				isComment: 0,
+				images: [],
+
+				group: "",
+
+				authorId: 0,
+				isFollow: 0,
+				aid: 0,
+				currencyName: "",
+				isrecommend: "",
+				tzlock: "",
+				istop: 0,
+				modified: "",
+				purview : 0,
+				isShare: false,
+
+				isImgShare: false,
+				imgShare: {
+					name: "",
+					title: "",
+					intro: "",
+					time: "",
+					imgUrl: "",
+					href: "",
+					webName: "",
+				},
+
+				rewardLog: [],
+				rewardAmount: 0,
+
+				DataType: 1,
+
+				display: 0,
+				opacityNum: 1,
+
+				topcommentsList: []
+			}
+		},
+		components: {
+			mpHtml,
+
+		},
+		onPageScroll(res) {
+			const scrollTop = res.scrollTop;
+			var that = this;
+			if (scrollTop >= 0) {
+				// 导航条颜色透明渐变
+				if (scrollTop <= 50) {
+					that.opacityNum = 1;
+					that.display = 0;
+				} else if (50 < scrollTop && scrollTop <= 140) {
+					that.opacityNum = 10 / scrollTop;
+					that.display = scrollTop / 100;
+				} else if (scrollTop > 140) {
+					that.opacityNum = 0;
+					that.display = 1;
+				}
+			}
+			// console.log(that.opacityNum)
+			// console.log(this.display)
+			// console.log(scrollTop)
+
+		},
+		onReachBottom() {
+			//触底后执行的方法，比如无限加载之类的
+			var that = this;
+			that.loadMore();
+		},
+		// #ifdef MP
+		onShareAppMessage(res) {
+			var that = this;
+			if (res.from === 'button') {
+				// 来自页面内分享按钮
+			}
+			if (res.from === 'menu') {
+				// 来自页面内分享按钮
+			}
+			var data = {
+				title: that.title,
+				path: '/page/contents/info?cid=' + that.cid
+			}
+			if (that.images.lenght > 0) {
+				data.imageUrl = that.images[0];
+			}
+
+		},
+		onShareTimeline() {
+			var that = this;
+			var data = {
+				title: that.title,
+				path: '/page/contents/info?cid=' + that.cid
+			}
+			if (that.images.lenght > 0) {
+				data.imageUrl = that.images[0];
+			}
+
+			return data;
+		},
+		// #endif
+		onShow() {
+			var that = this;
+			that.currencyName = that.$API.getCurrencyName();
+			if (localStorage.getItem('userinfo')) {
+
+				var userInfo = JSON.parse(localStorage.getItem('userinfo'));
+				that.uid = userInfo.uid;
+				that.group = userInfo.group;
+
+			}
+			// #ifdef MP-BAIDU
+			//预留百度小程序TDK
+			// #endif
+			that.getAdsCache();
+			// #ifdef H5 || APP-PLUS
+			that.isComment = 1;
+			// #endif
+			// #ifdef MP
+			that.isComment = that.$API.GetIsComment();
+			// #endif
+			// #ifdef APP-PLUS
+			//plus.navigator.setStatusBarStyle("dark")
+			// #endif
+			that.isLoad = 0;
+			that.page = 1;
+
+			if (that.cid != 0) {
+				that.getIsCommnet();
+				that.getInfo(that.cid);
+				that.getCommentsList(false, that.cid);
+				that.getTopCommentsList(false, that.cid);
+			}
+
+			if (localStorage.getItem('token')) {
+				that.token = localStorage.getItem('token');
+				that.toIsMark();
+			}
+			//that.allCache();
+			that.getVipInfo();
+
+		},
+		onPullDownRefresh() {
+			var that = this;
+			that.isLoad = 0;
+			that.page = 1;
+			var timer = setTimeout(function() {
+				that.getInfo(that.cid);
+				// #ifdef H5 || APP-PLUS
+				that.getCommentsList(false, that.cid);
+				// #endif
+			}, 1000)
+		},
+		onLoad(res) {
+			var that = this;
+			uni.getSystemInfo({
+				success: function(res) {
+					let model = ['X', 'XR', 'XS', '11', '12', '13', '14', '15'];
+					console.log("当前设备型号：" + res.model)
+					model.forEach(item => {
+						//适配iphoneX以上的底部，给tabbar一定高度的padding-bottom
+						if (res.model.indexOf(item) != -1 && res.model.indexOf('iPhone') != -1) {
+							that.paddingBottomHeight = 40;
+						}
+					})
+				}
+			});
+			// #ifdef APP-PLUS || MP
+			that.NavBar = this.CustomBar;
+			// #endif
+			that.cid = res.cid;
+			that.title = res.title;
+
+			// #ifdef APP-PLUS || H5
+			var owo = that.owo.data;
+			var owoList = [];
+			for (var i in owo) {
+				owoList = owoList.concat(owo[i].container);
+			}
+			that.owoList = owoList;
+			// #endif
+
+			if (localStorage.getItem('likeDate_' + that.cid)) {
+				var data = localStorage.getItem('likeDate_' + that.cid);
+				var cur_date = new Date().getTime();
+				var c = Number(cur_date) - Number(data);
+				if (c >= 86400000) {
+					that.isLikes = 0;
+					localStorage.removeItem('likeDate_' + that.cid)
+				} else {
+					that.isLikes = 1;
+				}
+			}
+			that.allCache();
+			that.getInfo(that.cid);
+
+			that.getRewardLog(that.cid);
+
+			// #ifdef H5 || APP-PLUS
+			that.getShopList();
+			// #endif
+			that.getCommentsList(false, that.cid);
+
+			var ctx = this.$refs.article;
+		},
+		methods: {
+			cBtnTap(name) {
+				let permission = false
+				let userInfo = this.$store.state.userInfo
+				if (userInfo.group == 'administrator' || userInfo.group == 'editor' || userInfo.isVip) {
+					permission = true
+				}
+				if (name == '图片') {
+					this.chooseImage()
+					return;
+				}
+				if (name == '颜色' && !permission) {
+					uni.$u.toast('颜色评论仅会员可用');
+					return
+				}
+				if (name == this.showComemntBtn) this.showComemntBtn = null;
+				else this.showComemntBtn = name
+			},
+			async chooseImage() {
+				if (this.images.length >= 6) {
+					uni.$u.toast('至多可添加6张图片')
+					return;
+				}
+				uni.chooseImage({
+					success: (res) => {
+						this.upload(res.tempFilePaths);
+					}
+				})
+			
+			},
+			  
+			
+			getAdsCache() {
+				var that = this;
+				if (localStorage.getItem('bannerAds')) {
+					that.bannerAds = JSON.parse(localStorage.getItem('bannerAds'));
+
+					var num = that.bannerAds.length;
+					if (num > 0) {
+						var rand = Math.floor(Math.random() * num);
+						that.bannerAdsInfo = that.bannerAds[rand];
+					}
+				}
+			},
+			backHome() {
+				uni.redirectTo({
+					url: '/pages/home/home'
+				});
+			},
+			back() {
+				const pages = getCurrentPages()
+				if (pages.length === 1) {
+					uni.redirectTo({
+						url: '/pages/home/home'
+					});
+				} else {
+					uni.navigateBack({
+						delta: 1
+					});
+				}
+			},
+			allCache() {
+				var that = this;
+				var cid = that.cid;
+				if (localStorage.getItem('postInfo_' + cid)) {
+					var postInfo = JSON.parse(localStorage.getItem('postInfo_' + cid));
+					that.category = postInfo.category;
+					that.created = postInfo.created;
+					that.commentsNum = postInfo.commentsNum;
+					that.images = postInfo.images;
+					that.markdown = postInfo.markdown;
+					if (postInfo.markdown == 1) {
+						that.html = that.markHtml(postInfo.text);
+					} else {
+						that.html = that.quillHtml(postInfo.text);
+					}
+
+					that.tagList = postInfo.tag;
+					that.slug = postInfo.slug;
+					that.authorId = postInfo.authorId
+					that.getUserInfo(postInfo.authorId);
+					that.getIsFollow(postInfo.authorId);
+
+				}
+				if (localStorage.getItem('commentsList_' + cid)) {
+					that.commentsList = JSON.parse(localStorage.getItem('commentsList_' + cid));
+
+				}
+
+			},
+			markExpand(text) {
+				var that = this;
+				//评论可见
+				if (that.isCommnet == 1) {
+					text = that.replaceAll(text, "[hide]",
+						"<div style='width:100%;padding:15px 15px;background:#dff0d8;color:#3c763d;border:solid 1px #d6e9c6;box-sizing: border-box;border-radius: 5px;word-break:break-all;'>"
+					);
+					text = that.replaceAll(text, "[/hide]", "</div>");
+					text = that.replaceAll(text, "{hide}",
+						"<div style='width:100%;padding:15px 15px;background:#dff0d8;color:#3c763d;border:solid 1px #d6e9c6;box-sizing: border-box;border-radius: 5px;word-break:break-all;'>"
+					)
+					text = that.replaceAll(text, "{/hide}", "</div>")
+				} else {
+					text = text.replace(/\[hide(([\s\S])*?)\[\/hide\]/g,
+						"<div style='width:100%;padding:15px 15px;background:#f2dede;color:#a94442;border:solid 1px #ebccd1;box-sizing: border-box;border-radius: 5px;'>此内容需要评论后方可阅读！</div>"
+					);
+					text = text.replace(/{hide(([\s\S])*?){\/hide}/g,
+						"<div style='width:100%;padding:15px 15px;background:#f2dede;color:#a94442;border:solid 1px #ebccd1;box-sizing: border-box;border-radius: 5px;'>此内容需要评论后方可阅读！</div>"
+					);
+				}
+				var isVip = 0;
+				if (localStorage.getItem('userinfo')) {
+					var userInfo = JSON.parse(localStorage.getItem('userinfo'));
+					isVip = userInfo.vip;
+				}
+				if (isVip > 0) {
+					text = that.replaceAll(text, "[vip]",
+						"<div style='width:100%;padding:15px 15px;background:#dff0d8;color:#3c763d;border:solid 1px #d6e9c6;box-sizing: border-box;border-radius: 5px;word-break:break-all;'>"
+					);
+					text = that.replaceAll(text, "[/vip]", "</div>");
+				} else {
+					text = text.replace(/\[vip(([\s\S])*?)\[\/vip\]/g,
+						"<div style='width:100%;padding:15px 15px;background:rgba(251,189,8,0.2);color:#fbbd08;border:solid 1px #fbbd08;box-sizing: border-box;border-radius: 5px;'>此内容仅VIP权限阅读！</div>"
+					);
+				}
+				//表情包
+				// #ifdef APP-PLUS || H5
+				var owoList = that.owoList;
+				for (var i in owoList) {
+
+					if (that.replaceSpecialChar(text).indexOf(owoList[i].data) != -1) {
+						text = that.replaceAll(that.replaceSpecialChar(text), owoList[i].data, "<img src='" + owoList[i]
+							.icon + "' class='tImg' />")
+
+					}
+				}
+				// #endif
+
+				return text;
+			},
+			markHtml(text) {
+				var that = this;
+				//下面奇怪的代码是为了解决可执行代码区域问题
+				text = that.replaceAll(text, "@!!!", "@@@@");
+
+				text = that.replaceAll(text, "!!!", "");
+				text = that.replaceAll(text, "@@@@", "@!!!");
+				text = that.markExpand(text);
+				//text = text.replace(/(?<!\r)\n(?!\r)/g, "\n\n");
+				//兼容垃圾的Safari浏览器
+				text = text.replace(/([^\r])\n([^\r])/g, "$1\n\n$2");
+				text = that.replaceAll(text, "||rn||", "\n\n");
+				return text;
+
+			},
+
+			markCommentHtml(text) {
+				var that = this;
+				// #ifdef APP-PLUS || H5
+				var owoList = that.owoList;
+				for (var i in owoList) {
+
+					if (that.replaceSpecialChar(text).indexOf(owoList[i].data) != -1) {
+						text = that.replaceAll(that.replaceSpecialChar(text), owoList[i].data, "<img src='/" + owoList[i]
+							.icon + "' class='tImg' />")
+
+					}
+				}
+				// #endif
+				return text;
+			},
+			getUserLv(i) {
+				var that = this;
+				if (!i) {
+					var i = 0;
+				}
+				var rankList = that.$API.GetRankList();
+				return rankList[i];
+			},
+			getUserLvStyle(i) {
+				var that = this;
+				if (!i) {
+					var i = 0;
+				}
+				var rankStyle = that.$API.GetRankStyle();
+				var userlvStyle = "color:#fff;background-color: " + rankStyle[i];
+				return userlvStyle;
+			},
+			replaceAll(string, search, replace) {
+				return string.split(search).join(replace);
+			},
+			toUserInfo(data) {
+				var that = this;
+				var name = data.name;
+				var title = data.name + "的信息";
+				if (data.screenName) {
+					title = data.screenName + " 的信息";
+					name = data.screenName
+				}
+				var id = data.uid;
+				var type = "user";
+				uni.navigateTo({
+					url: '/pages/contents/userinfo?title=' + title + "&name=" + name + "&uid=" + id + "&avatar=" +
+						encodeURIComponent(data.avatar)
+				});
+			},
+			toTagsContents(title, id) {
+				var that = this;
+				var type = "meta";
+				uni.navigateTo({
+					url: '/pages/contents/contentlist?title=' + title + "&type=" + type + "&id=" + id
+				});
+			},
+			toCategoryContents(data) {
+				var that = this;
+				var title = data[0].name;
+				var id = data[0].mid;
+				var type = "meta";
+				uni.navigateTo({
+					url: '/pages/contents/contentlist?title=' + title + "&type=" + type + "&id=" + id
+				});
+			},
+
+			loadMore() {
+				var that = this;
+				that.moreText = "正在加载中...";
+				if (that.isLoad == 0) {
+					that.getCommentsList(true, that.cid);
+				}
+
+			},
+			getVipInfo() {
+				var that = this;
+				that.$Net.request({
+					url: that.$API.getVipInfo(),
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded'
+					},
+					method: "get",
+					dataType: 'json',
+					success: function(res) {
+						if (res.data.code == 1) {
+							that.vipDiscount = res.data.data.vipDiscount;
+							that.vipPrice = res.data.data.vipPrice;
+							that.scale = res.data.data.scale;
+						}
+						var timer = setTimeout(function() {
+							that.isLoading = 1;
+							clearTimeout('timer')
+						}, 300)
+					},
+					fail: function(res) {
+						var timer = setTimeout(function() {
+							that.isLoading = 1;
+							clearTimeout('timer')
+						}, 300)
+					}
+				})
+			},
+			quillHtml(text) {
+				var that = this;
+				text = that.replaceAll(text, "hljs", "hl");
+				text = that.replaceAll(text, "ql-syntax", "hl-pre");
+
+				text = that.markExpand(text);
+				return text;
+			},
+			getInfo(cid) {
+				var that = this;
+				var token = "";
+				if (localStorage.getItem('userinfo')) {
+					var userInfo = JSON.parse(localStorage.getItem('userinfo'));
+					token = userInfo.token;
+				}
+				var data = {
+					"key": that.cid,
+					"isMd": 0,
+					"token": token
+				}
+
+				that.$Net.request({
+					url: that.$API.getContentsInfo(),
+					data: data,
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded'
+					},
+					method: "get",
+					dataType: 'json',
+					
+					success: function(res) {
+						// console.log("当前：" + that.$API.getContentsInfo())
+						uni.stopPullDownRefresh();
+						if (res.data.title) {
+							that.title = res.data.title;
+							that.category = res.data.category;
+							that.created = res.data.created;
+							that.modified = res.data.modified;
+							that.views = res.data.views;
+							that.likes = res.data.likes;
+							that.commentsNum = res.data.commentsNum;
+							that.rewardAmount = res.data.rewardAmount;
+							that.images = res.data.images;
+							that.markdown = res.data.markdown;
+							var html = res.data.text;
+							that.isrecommend = res.data.isrecommend;
+							that.istop = res.data.istop;
+							if (res.data.markdown == 1) {
+								html = that.markHtml(res.data.text);
+							} else {
+								html = that.quillHtml(res.data.text);
+							}
+							that.html = html;
+							that.tagList = res.data.tag;
+							that.slug = res.data.slug;
+							that.type = res.data.type;
+							that.likes = res.data.likes;
+							that.authorId = res.data.authorId
+
+							that.getUserInfo(res.data.authorId);
+							that.getIsFollow(res.data.authorId);
+							that.tzlock = res.data.tzlock;
+							that.aid = that.authorId;
+							that.purview = res.data.purview;
+							localStorage.removeItem('postInfo_' + that.cid);
+							localStorage.setItem('postInfo_' + that.cid, JSON.stringify(res.data));
+
+							var timer = setTimeout(function() {
+								that.allCache();
+							}, 200);
+							var timer = setTimeout(function() {
+								that.isLoading = 1;
+								clearTimeout('timer')
+							}, 300)
+
+						}
+					},
+					fail: function(res) {
+						uni.stopPullDownRefresh();
+					}
+				})
+			},
+			getUserInfo(id) {
+				var that = this;
+				var data = {
+					"key": id,
+				}
+				that.$Net.request({
+					url: that.$API.getUserInfo(),
+					data: data,
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded'
+					},
+					method: "get",
+					dataType: 'json',
+					success: function(res) {
+
+						if (res.data.code == 1) {
+							that.userInfo = res.data.data;
+							that.userInfo.style = "background-image:url(" + res.data.data.avatar + ");"
+							that.userInfo.customizecolor = res.data.data.customizecolor
+
+						} else {
+							that.userInfo.name = "用户已注销"
+						}
+
+					},
+					fail: function(res) {}
+				});
+			},
+			setDataType(type) {
+				var that = this;
+				that.DataType = type;
+				// that.spaceLoad = false;
+				that.page = 1;
+				that.commentsList = [];
+				that.getCommentsList(false);
+			},
+			getCommentsList(isPage,type) {
+				var that = this;
+				var DataType = that.DataType;
+				var order ="created_asc";
+				// var data = {
+				// 	"cid": that.cid,
+				// 	"istop": 0,
+				// 	"status":"approved",
+				// }
+				
+				if (DataType == 1) {
+					order = "created_asc";
+				}
+				if (DataType == 2) {
+					order = "created";
+				}
+				if (DataType == 3) {
+					order = "likes";
+				}
+				var data = {
+					"cid": that.cid,
+					"istop": 0,
+					"status":"approved",
+				}
+				if (DataType == 0) {
+					var data = {
+						"cid": that.cid,
+						"istop": 0,
+						"status":"approved",
+						"authorId": that.authorId,
+					} 
+				}
+				var page = that.page;
+				if (isPage) {
+					page++;
+				}
+				
+				that.$Net.request({
+					url: that.$API.getCommentsList(),
+					
+					data: {
+						"searchParams": JSON.stringify(that.$API.removeObjectEmptyKey(data)),
+						"limit": 8,
+						"page": page,
+						"order": order,
+					},
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded'
+					},
+					method: "get",
+					dataType: 'json',
+					success: function(res) {
+						// console.log("嘎嘎嘎嘎嘎"+JSON.stringify(res))
+						uni.stopPullDownRefresh();
+						that.isLoad = 0;
+						if (res.data.code == 1) {
+							var list = res.data.data;
+							// var spaceList = [];
+							console.log("嘎嘎嘎嘎嘎"+JSON.stringify(list))
+							if (list.length > 0) {
+								var commentsList = [];
+								for (var i in list) {
+									var arr = list[i];
+									arr.style = "background-image:url(" + list[i].avatar + ");"
+									if (list[i].pic) {
+										var pic = list[i].pic;
+										list[i].picList = pic.split("||");
+									} else {
+										list[i].picList = [];
+									}
+									if (list[i].parentComments.pic) {
+										var pic2 = list[i].parentComments.pic;
+										list[i].picList2 = pic2.split("||");
+									} else {
+										list[i].picList2 = [];
+									}
+									commentsList.push(arr);
+									// spaceList = list;
+								}
+								if (isPage) {
+									that.page++;
+									that.commentsList = that.commentsList.concat(commentsList);
+									// that.spaceList = that.spaceList.concat(spaceList);
+									
+								} else {
+									that.commentsList = commentsList;
+									// that.spaceList = that.spaceList.concat(spaceList);
+								}
+								localStorage.setItem('commentsList_' + that.cid, JSON.stringify(that
+									.commentsList));
+
+							} else {
+								that.moreText = "没有更多评论了";
+								if (that.page == 1 && !isPage) {
+									localStorage.removeItem('commentsList_' + that.cid);
+									that.commentsList = [];
+								}
+							}
+						}
+					},
+					fail: function(res) {
+						uni.stopPullDownRefresh();
+						uni.showToast({
+							title: "网络开小差了哦",
+							icon: 'none'
+						})
+						that.isLoad = 0;
+						var timer = setTimeout(function() {
+							that.isLoading = 1;
+							clearTimeout('timer')
+						}, 300)
+
+						that.moreText = "加载更多";
+					}
+				})
+			},
+			getTopCommentsList(isPage, id) {
+				var that = this;
+				var data = {
+					"cid": id,
+					"istop": 1,
+					"status": "approved"
+				}
+				var page = that.page;
+				if (isPage) {
+					page++;
+				}
+				that.$Net.request({
+					url: that.$API.getCommentsList(),
+					data: {
+						"searchParams": JSON.stringify(that.$API.removeObjectEmptyKey(data)),
+						"limit": 20,
+						"page": page,
+					},
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded'
+					},
+					method: "get",
+					dataType: 'json',
+					success: function(res) {
+						uni.stopPullDownRefresh();
+						that.isLoad = 0;
+						if (res.data.code == 1) {
+							var list = res.data.data;
+
+							if (list.length > 0) {
+								var topcommentsList = [];
+								for (var i in list) {
+									var arr = list[i];
+									arr.style = "background-image:url(" + list[i].avatar + ");"
+									if (list[i].pic) {
+										var pic = list[i].pic;
+										list[i].picList = pic.split("||");
+									} else {
+										list[i].picList = [];
+									}
+									topcommentsList.push(arr);
+								}
+								if (isPage) {
+									that.page++;
+									that.topcommentsList = that.topcommentsList.concat(topcommentsList);
+								} else {
+									that.topcommentsList = topcommentsList;
+								}
+								localStorage.setItem('topcommentsList_' + that.cid, JSON.stringify(that
+									.topcommentsList));
+
+							} else {
+								that.moreText = "没有更多评论了";
+								if (that.page == 1 && !isPage) {
+									localStorage.removeItem('topcommentsList_' + that.cid);
+									that.topcommentsList = [];
+								}
+							}
+						}
+					},
+					fail: function(res) {
+						uni.stopPullDownRefresh();
+						uni.showToast({
+							title: "网络开小差了哦",
+							icon: 'none'
+						})
+						that.isLoad = 0;
+						var timer = setTimeout(function() {
+							that.isLoading = 1;
+							clearTimeout('timer')
+						}, 300)
+						that.moreText = "加载更多";
+					}
+				})
+			},
+			// 其他方法保持不变
+			commentsAdd(title, coid, reply) {
+				var that = this;
+
+				if (!localStorage.getItem('userinfo')) {
+					uni.showToast({
+						title: "请先登录",
+						icon: 'none'
+					})
+					uni.navigateTo({
+						url: '/pages/user/login'
+					});
+					return false;
+				} else {
+					var cid = that.cid;
+					uni.navigateTo({
+						url: '/pages/contents/commentsadd?cid=' + cid + "&coid=" + coid + "&title=" + title +
+							"&isreply=" + reply
+					});
+				}
+
+			},
+			toReward() {
+				var that = this;
+				var rewardList = that.checkbox;
+				var num = 10;
+				for (var i in rewardList) {
+					if (rewardList[i].checked) {
+						num = rewardList[i].num;
+					}
+				}
+				var data = {
+					"type": "reward",
+					"cid": that.cid,
+					"num": num,
+				}
+				uni.showLoading({
+					title: "加载中"
+				});
+				that.$Net.request({
+
+					url: that.$API.addLog(),
+					data: {
+						"params": JSON.stringify(that.$API.removeObjectEmptyKey(data)),
+						"token": that.token
+					},
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded'
+					},
+					method: "get",
+					dataType: 'json',
+					success: function(res) {
+						that.hideModal();
+						setTimeout(function() {
+							uni.hideLoading();
+						}, 500);
+						uni.showToast({
+							title: res.data.msg,
+							icon: 'none'
+						})
+						if (res.data.code == 1) {
+							uni.showToast({
+								title: "成功打赏 " + num + " " + that.currencyName,
+								icon: 'none'
+							})
+						}
+
+					},
+					fail: function(res) {
+						that.hideModal();
+						setTimeout(function() {
+							uni.hideLoading();
+						}, 500);
+						uni.showToast({
+							title: "网络开小差了哦",
+							icon: 'none'
+						})
+					}
+				})
+			},
+			toLikes() {
+				var that = this;
+				var data = {
+					"type": "likes",
+					"cid": that.cid,
+				}
+				uni.showLoading({
+					title: "加载中"
+				});
+				that.$Net.request({
+
+					url: that.$API.addLog(),
+					
+					data: {
+						"params": JSON.stringify(that.$API.removeObjectEmptyKey(data)),
+						"token": that.token
+					},
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded'
+					},
+					method: "get",
+					dataType: 'json',
+					success: function(res) {
+						setTimeout(function() {
+							uni.hideLoading();
+						}, 500);
+						uni.showToast({
+							title: res.data.msg,
+							icon: 'none'
+						})
+						if (res.data.code == 1) {
+							var timestamp = new Date().getTime();
+							that.isLikes = 1;
+							localStorage.setItem('likeDate_' + that.cid, timestamp);
+							that.likes++;
+							//that.getInfo(that.cid);
+						}
+
+					},
+					fail: function(res) {
+						setTimeout(function() {
+							uni.hideLoading();
+						}, 500);
+						uni.showToast({
+							title: "网络开小差了哦",
+							icon: 'none'
+						})
+					}
+				})
+			},
+			showModal(e) {
+				this.modalName = e.currentTarget.dataset.target
+			},
+			hideModal(e) {
+				this.modalName = null
+			},
+			ChooseCheckbox(j) {
+				let items = this.checkbox;
+				for (let i = 0, lenI = items.length; i < lenI; ++i) {
+					this.checkbox[i].checked = false;
+				}
+				this.checkbox[j].checked = !this.checkbox[j].checked;
+			},
+			toIsMark() {
+				var that = this;
+				that.$Net.request({
+
+					url: that.$API.getIsMark(),
+					data: {
+						"token": that.token,
+						"cid": that.cid
+					},
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded'
+					},
+					method: "get",
+					dataType: 'json',
+					success: function(res) {
+
+						if (res.data.code == 1) {
+							that.isMark = res.data.data.isMark;
+							that.logid = res.data.data.logid;
+						}
+					},
+					fail: function(res) {
+						uni.showToast({
+							title: "网络开小差了哦",
+							icon: 'none'
+						})
+					}
+				})
+			},
+			toMark() {
+
+				var that = this;
+				var data = {
+					"type": "mark",
+					"cid": that.cid,
+				}
+				uni.showLoading({
+					title: "加载中"
+				});
+				that.$Net.request({
+
+					url: that.$API.addLog(),
+					data: {
+						"params": JSON.stringify(that.$API.removeObjectEmptyKey(data)),
+						"token": that.token
+					},
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded'
+					},
+					method: "get",
+					dataType: 'json',
+					success: function(res) {
+						setTimeout(function() {
+							uni.hideLoading();
+						}, 500);
+						uni.showToast({
+							title: res.data.msg,
+							icon: 'none'
+						})
+						if (res.data.code == 1) {
+							that.toIsMark();
+							that.isMark = 1;
+							//that.toIsMark();
+						}
+
+					},
+					fail: function(res) {
+						setTimeout(function() {
+							uni.hideLoading();
+						}, 500);
+						uni.showToast({
+							title: "网络开小差了哦",
+							icon: 'none'
+						})
+					}
+				})
+			},
+			rmMark() {
+				var that = this;
+				uni.showLoading({
+					title: "加载中"
+				});
+				that.$Net.request({
+
+					url: that.$API.removeLog(),
+					data: {
+						"key": that.logid,
+						"token": that.token
+					},
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded'
+					},
+					method: "get",
+					dataType: 'json',
+					success: function(res) {
+						setTimeout(function() {
+							uni.hideLoading();
+						}, 500);
+						uni.showToast({
+							title: res.data.msg,
+							icon: 'none'
+						})
+						if (res.data.code == 1) {
+							that.isMark = 0;
+							that.toIsMark();
+							//that.toIsMark();
+						}
+
+					},
+					fail: function(res) {
+						setTimeout(function() {
+							uni.hideLoading();
+						}, 500);
+						uni.showToast({
+							title: "网络开小差了哦",
+							icon: 'none'
+						})
+					}
+				})
+			},
+			// formatDate(datetime) {
+			// 	var datetime = new Date(parseInt(datetime * 1000));
+			// 	// 获取年月日时分秒值  slice(-2)过滤掉大于10日期前面的0
+			// 	var year = datetime.getFullYear(),
+			// 		month = ("0" + (datetime.getMonth() + 1)).slice(-2),
+			// 		date = ("0" + datetime.getDate()).slice(-2),
+			// 		hour = ("0" + datetime.getHours()).slice(-2),
+			// 		minute = ("0" + datetime.getMinutes()).slice(-2);
+			// 	//second = ("0" + date.getSeconds()).slice(-2);
+			// 	// 拼接
+			// 	var result = year + "-" + month + "-" + date + " " + hour + ":" + minute;
+			// 	// 返回
+			// 	return result;
+			// },
+			formatDate(datetime) {
+				const timeUnits = [{
+						unit: 'year',
+						divisor: 31536000000,
+						suffix: '年前'
+					},
+					{
+						unit: 'month',
+						divisor: 2592000000,
+						suffix: '个月前'
+					},
+					{
+						unit: 'week',
+						divisor: 604800000,
+						suffix: '周前'
+					},
+					{
+						unit: 'day',
+						divisor: 86400000,
+						suffix: '天前'
+					},
+					{
+						unit: 'hour',
+						divisor: 3600000,
+						suffix: '小时前'
+					},
+					{
+						unit: 'minute',
+						divisor: 60000,
+						suffix: '分钟前'
+					},
+					{
+						unit: 'second',
+						divisor: 1000,
+						suffix: '秒前'
+					}
+				]
+
+				const diff = new Date() - new Date(datetime * 1000)
+
+				for (const {
+						divisor,
+						suffix
+					}
+					of timeUnits) {
+					const value = Math.floor(diff / divisor)
+					if (value >= 1) return `${value}${suffix}`
+				}
+
+				return '刚刚'
+			},
+			ToCopy(text) {
+				var that = this;
+				// #ifdef APP-PLUS
+				uni.setClipboardData({
+					data: text,
+					success: () => { //复制成功的回调函数
+						uni.showToast({ //提示
+							title: "复制成功"
+						})
+					}
+				});
+				// #endif
+				// #ifdef H5 
+				let textarea = document.createElement("textarea");
+				textarea.value = text;
+				textarea.readOnly = "readOnly";
+				document.body.appendChild(textarea);
+				textarea.select();
+				textarea.setSelectionRange(0, text.length);
+				uni.showToast({ //提示
+					title: "复制成功"
+				})
+				var result = document.execCommand("copy")
+				textarea.remove();
+
+				// #endif
+			},
+			goAds(data) {
+				var that = this;
+				var url = data.url;
+				var type = data.urltype;
+				// #ifdef APP-PLUS
+				if (type == 1) {
+					plus.runtime.openURL(url);
+				}
+				if (type == 0) {
+					plus.runtime.openWeb(url);
+				}
+				// #endif
+				// #ifdef H5
+				window.open(url)
+				// #endif
+			},
+			ToShare() {
+
+				var that = this;
+				var linkRule = that.$API.GetLinkRule();
+
+
+				var url = linkRule.replace("{cid}", that.cid);
+				if (linkRule.indexOf("{category}") != -1) {
+					var category = that.category[0].slug;
+					url = url.replace("{category}", category);
+				}
+
+				if (that.type != "post") {
+					var pageRule = that.$API.GetPageRule();
+					url = pageRule.replace("{slug}", that.slug);
+				}
+
+				// #ifdef APP-PLUS
+				uni.shareWithSystem({
+					href: url,
+					summary: that.title,
+					success() {
+						// 分享完成，请注意此时不一定是成功分享
+
+					},
+					fail() {
+						// 分享失败
+					}
+				});
+				// #endif
+				// #ifdef h5
+				that.ToCopy(url);
+				// #endif
+			},
+
+			closeImgShare() {
+				var that = this;
+				that.isImgShare = false;
+			},
+			goImgShare() {
+				var that = this;
+				var linkRule = that.$API.GetLinkRule();
+
+
+				var url = linkRule.replace("{cid}", that.cid);
+				if (linkRule.indexOf("{category}") != -1) {
+					var category = that.category[0].slug;
+					url = url.replace("{category}", category);
+				}
+
+				if (that.type != "post") {
+					var pageRule = that.$API.GetPageRule();
+					url = pageRule.replace("{slug}", that.slug);
+				}
+				that.imgShare.href = url;
+				that.imgShare.title = that.title;
+
+				var name = that.userInfo.name;
+				if (that.userInfo.screenName) {
+					name = that.userInfo.screenName;
+				}
+				that.imgShare.name = name;
+
+				if (that.images.length > 0) {
+					that.imgShare.imgUrl = that.images[0];
+				}
+				that.imgShare.time = that.formatDate(that.created);
+				that.imgShare.webName = that.$API.GetAppName();
+				that.imgShare.intro = that.subIntroText(that.html);
+				that.isShare = false;
+				that.isImgShare = true;
+
+			},
+			formatNumber(num) {
+				return num >= 1e3 && num < 1e4 ? (num / 1e3).toFixed(1) + 'k' : num >= 1e4 ? (num / 1e4).toFixed(1) + 'w' :
+					num
+			},
+			getShopList() {
+				var that = this;
+				var uid = 0;
+				if (localStorage.getItem('userinfo')) {
+
+					var userInfo = JSON.parse(localStorage.getItem('userinfo'));
+					uid = userInfo.uid;
+
+				}
+				var data = {
+					"cid": that.cid,
+				}
+				that.$Net.request({
+					url: that.$API.shopList(),
+					data: {
+						"searchParams": JSON.stringify(that.$API.removeObjectEmptyKey(data)),
+						"limit": 1,
+						"page": 1,
+					},
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded'
+					},
+					method: "get",
+					dataType: 'json',
+					success: function(res) {
+
+						if (res.data.code == 1) {
+							var list = res.data.data;
+							that.shopList = list;
+							if (list.length > 0) {
+								that.shopID = list[0].id;
+								that.isBuyShop(that.shopID, list[0].type);
+							}
+
+						}
+					},
+					fail: function(res) {
+						uni.showToast({
+							title: "网络开小差了哦",
+							icon: 'none'
+						})
+
+					}
+				})
+			},
+			getIsCommnet() {
+				var that = this;
+				// #ifdef MP
+				that.isCommnet = 1;
+				that.getInfo(that.cid);
+				return false;
+				// #endif
+				var token = "";
+				if (localStorage.getItem('userinfo')) {
+
+					var userInfo = JSON.parse(localStorage.getItem('userinfo'));
+					token = userInfo.token;
+
+				}
+				if (token == "") {
+					return false;
+				}
+				var data = {
+					"key": that.cid,
+					"token": token
+				}
+				that.$Net.request({
+					url: that.$API.isCommnet(),
+					data: data,
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded'
+					},
+					method: "get",
+					dataType: 'json',
+					success: function(res) {
+						if (res.data.code == 1) {
+							that.isCommnet = 1;
+							that.getInfo(that.cid);
+						}
+					},
+					fail: function(res) {
+						uni.showToast({
+							title: "网络开小差了哦",
+							icon: 'none'
+						})
+
+					}
+				})
+			},
+			shopInfo(data) {
+				var that = this;
+				var sid = data.id;
+				if (data.status != 1) {
+					uni.showToast({
+						title: "该商品未上架",
+						icon: 'none'
+					})
+					return false;
+				}
+				uni.navigateTo({
+					url: '/pages/shop/shopinfo?sid=' + sid
+				});
+			},
+			// toSearch() {
+			// 	var that = this;
+
+			// 	uni.redirectTo({
+			// 		url: '/pages/contents/search'
+			// 	});
+			// },
+			toAds(url) {
+				// #ifdef APP-PLUS
+				plus.runtime.openURL(url)
+				// #endif
+				// #ifdef H5
+				window.open(url)
+				// #endif
+			},
+			replaceSpecialChar(text) {
+				if (!text) {
+					return false;
+				}
+				text = text.replace(/&quot;/g, '"');
+				text = text.replace(/&amp;/g, '&');
+				text = text.replace(/&lt;/g, '<');
+				text = text.replace(/&gt;/g, '>');
+				text = text.replace(/&nbsp;/g, ' ');
+				return text;
+			},
+			isBuyShop(sid, type) {
+				var that = this;
+				var token = "";
+
+				if (localStorage.getItem('userinfo')) {
+					var userInfo = JSON.parse(localStorage.getItem('userinfo'));
+					token = userInfo.token;
+				}
+				var data = {
+					"sid": sid,
+					"token": token
+				}
+				that.$Net.request({
+					url: that.$API.isBuyShop(),
+					data: data,
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded'
+					},
+					method: "get",
+					dataType: 'json',
+					success: function(res) {
+
+						if (res.data.code == 1) {
+							that.isBuy = 1;
+							if (type == 4) {
+								that.toShopValue(sid, type);
+							}
+						}
+
+					},
+					fail: function(res) {
+						uni.showToast({
+							title: "网络开小差了哦",
+							icon: 'none'
+						})
+					}
+				})
+			},
+			shopBuy(sid, type) {
+				var that = this;
+				var token = "";
+				if (localStorage.getItem('userinfo')) {
+					var userInfo = JSON.parse(localStorage.getItem('userinfo'));
+					token = userInfo.token;
+				} else {
+					uni.showToast({
+						title: "请先登录",
+						icon: 'none',
+						duration: 1000,
+						position: 'bottom',
+					});
+					var timer = setTimeout(function() {
+						uni.navigateTo({
+							url: '../user/login'
+						});
+						clearTimeout('timer')
+					}, 1000)
+					return false
+				}
+				//因为增加了金币抵扣，所以跳转订单确认
+				if (type != 4) {
+					uni.navigateTo({
+						url: '/pages/shop/orderpay?sid=' + sid
+					});
+					return false
+				}
+
+				var data = {
+					"token": token,
+					"sid": sid
+				}
+				uni.showModal({
+					title: '确定购买此商品吗?',
+					content: ' ',
+					success: function(res) {
+						if (res.confirm) {
+							uni.showLoading({
+								title: "加载中"
+							});
+							that.$Net.request({
+								url: that.$API.buyShop(),
+								data: data,
+								header: {
+									'Content-Type': 'application/x-www-form-urlencoded'
+								},
+								method: "get",
+								dataType: 'json',
+								success: function(res) {
+									setTimeout(function() {
+										uni.hideLoading();
+									}, 1000);
+									uni.showToast({
+										title: res.data.msg,
+										icon: 'none'
+									})
+									if (res.data.code == 1) {
+
+										if (type != 4) {
+											//跳转订单页面
+											var timer = setTimeout(function() {
+												uni.navigateTo({
+													url: '/pages/user/order'
+												});
+												clearTimeout('timer')
+											}, 1000)
+										} else {
+											that.toShopValue(sid, type);
+										}
+
+									} else {
+										if (res.data.msg == "购买实体商品前，需要先设置收货地址") {
+											var timer = setTimeout(function() {
+												uni.redirectTo({
+													url: '/pages/user/address'
+												});
+												clearTimeout('timer')
+											}, 1000)
+										}
+									}
+
+								},
+								fail: function(res) {
+									setTimeout(function() {
+										uni.hideLoading();
+									}, 1000);
+									uni.showToast({
+										title: "网络开小差了哦",
+										icon: 'none'
+									})
+								}
+							})
+						}
+					}
+				});
+
+			},
+			toShopValue(id, type) {
+				var that = this;
+				if (type == 1) {
+					uni.showToast({
+						title: "实体商品请留意快递信息",
+						icon: 'none'
+					})
+				} else if (type == 4) {
+					var that = this;
+					var token = "";
+					if (localStorage.getItem('token')) {
+						token = localStorage.getItem('token');
+					}
+					var data = {
+						"key": id,
+						"token": token
+					}
+					that.$Net.request({
+						url: that.$API.shopInfo(),
+						data: data,
+						header: {
+							'Content-Type': 'application/x-www-form-urlencoded'
+						},
+						method: "get",
+						dataType: 'json',
+						success: function(res) {
+
+							uni.stopPullDownRefresh();
+							if (res.data.value) {
+								that.shopIsMd = res.data.isMd;
+								that.shopValue = that.quillHtml(res.data.value);
+							}
+
+
+							var timer = setTimeout(function() {
+								that.isLoading = 1;
+								clearTimeout('timer')
+							}, 300)
+						},
+						fail: function(res) {
+							uni.stopPullDownRefresh();
+							uni.showToast({
+								title: "网络开小差了哦",
+								icon: 'none'
+							})
+							var timer = setTimeout(function() {
+								that.isLoading = 1;
+								clearTimeout('timer')
+							}, 300)
+						}
+					})
+				} else {
+					uni.navigateTo({
+						url: '/pages/shop/shoptext?sid=' + id
+					});
+				}
+			},
+			subIntroText(text, num) {
+				var that = this;
+				// 检查 text 是否为 undefined 或 null，若是则赋值为空字符串
+				if (typeof text !== 'string') {
+					text = '';
+				}
+
+				// 去除 HTML 标签
+				text = text.replace(/<\/?[^>]+(>|$)/g, "");
+
+				// 替换特殊字符
+				text = that.replaceSpecialChar(text);
+
+				// 截断字符串并添加省略号
+				if (text.length > num) {
+					return text.substring(0, num) + "……";
+				} else {
+					return text;
+				}
+			},
+			subText(text, num) {
+				if (text) {
+					if (text.length > num) {
+						text = text.substring(0, num);
+						return text + "……";
+					} else {
+						return text;
+					}
+				} else {
+					return "Ta还没有个人介绍哦"
+				}
+			},
+			toUserContents(data) {
+				var that = this;
+				var name = data.author;
+				var title = data.author + "的信息";
+				var id = data.authorId;
+				var type = "user";
+				uni.navigateTo({
+					url: '/pages/contents/userinfo?title=' + title + "&name=" + name + "&uid=" + id + "&avatar=" +
+						encodeURIComponent(data.avatar)
+				});
+			},
+			toBan(uid) {
+				if (!uid) {
+					uni.showToast({
+						title: "该用户不存在",
+						icon: 'none'
+					})
+					return false;
+				}
+				uni.navigateTo({
+					url: '/pages/manage/banuser?uid=' + uid
+				});
+			},
+			toDelete(id) {
+				var that = this;
+				var token = "";
+
+				if (localStorage.getItem('userinfo')) {
+					var userInfo = JSON.parse(localStorage.getItem('userinfo'));
+					token = userInfo.token;
+				}
+				var data = {
+					"key": id,
+					"token": token
+				}
+				uni.showModal({
+					title: '确定要删除该评论吗',
+					success: function(res) {
+						if (res.confirm) {
+							uni.showLoading({
+								title: "加载中"
+							});
+
+							that.$Net.request({
+								url: that.$API.commentsDelete(),
+								data: data,
+								header: {
+									'Content-Type': 'application/x-www-form-urlencoded'
+								},
+								method: "get",
+								dataType: 'json',
+								success: function(res) {
+									setTimeout(function() {
+										uni.hideLoading();
+									}, 1000);
+									uni.showToast({
+										title: res.data.msg,
+										icon: 'none'
+									})
+									if (res.data.code == 1) {
+										that.page = 1;
+										that.getCommentsList(false, that.cid);
+									}
+
+								},
+								fail: function(res) {
+									setTimeout(function() {
+										uni.hideLoading();
+									}, 1000);
+									uni.showToast({
+										title: "网络开小差了哦",
+										icon: 'none'
+									})
+								}
+							})
+						} else if (res.cancel) {
+							console.log('用户点击取消');
+						}
+					}
+				});
+			},
+			getIsFollow(uid) {
+				var that = this;
+				var token = "";
+				if (localStorage.getItem('userinfo')) {
+					var userInfo = JSON.parse(localStorage.getItem('userinfo'));
+					token = userInfo.token;
+				}
+				var data = {
+					token: token,
+					touid: uid,
+				}
+				that.$Net.request({
+
+					url: that.$API.isFollow(),
+					data: data,
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded'
+					},
+					method: "get",
+					dataType: 'json',
+					success: function(res) {
+						that.isFollow = res.data.code;
+					},
+					fail: function(res) {
+						uni.showToast({
+							title: "网络开小差了哦",
+							icon: 'none'
+						})
+					}
+				})
+			},
+			follow(type) {
+				var that = this;
+				var token = "";
+				if (localStorage.getItem('userinfo')) {
+					var userInfo = JSON.parse(localStorage.getItem('userinfo'));
+					token = userInfo.token;
+				} else {
+					uni.showToast({
+						title: "请先登录",
+						icon: 'none'
+					})
+					uni.navigateTo({
+						url: '/pages/user/login'
+					});
+					return false;
+				}
+				var data = {
+					token: token,
+					touid: that.authorId,
+					type: type,
+				}
+				that.isFollow = type;
+				uni.showLoading({
+					title: "加载中"
+				});
+				that.$Net.request({
+
+					url: that.$API.follow(),
+					data: data,
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded'
+					},
+					method: "get",
+					dataType: 'json',
+					success: function(res) {
+
+						setTimeout(function() {
+							uni.hideLoading();
+						}, 1000);
+						uni.showToast({
+							title: res.data.msg,
+							icon: 'none'
+						})
+						that.getIsFollow(that.authorId);
+					},
+					fail: function(res) {
+						setTimeout(function() {
+							uni.hideLoading();
+						}, 1000);
+						uni.showToast({
+							title: "网络开小差了哦",
+							icon: 'none'
+						})
+						uni.stopPullDownRefresh();
+						that.getIsFollow(that.authorId);
+					}
+				})
+			},
+			toLink(text) {
+				var that = this;
+
+				if (!localStorage.getItem('token') || localStorage.getItem('token') == "") {
+					uni.showToast({
+						title: "请先登录哦",
+						icon: 'none'
+					})
+					return false;
+				}
+				uni.navigateTo({
+					url: text
+				});
+			},
+			goPost(cid) {
+				var that = this;
+
+				if (!localStorage.getItem('token') || localStorage.getItem('token') == "") {
+					uni.showToast({
+						title: "请先登录哦",
+						icon: 'none'
+					})
+					return false;
+				}
+
+				var markdown = that.markdown;
+				if (markdown == 1) {
+					//MarkDown编辑器
+					uni.navigateTo({
+						url: '/pages/user/post?type=edit' + '&cid=' + cid
+					});
+				} else {
+					//富文本编辑器
+					uni.navigateTo({
+						url: '/pages/edit/articlePost?type=edit' + '&cid=' + cid
+					});
+				}
+			},
+			addRecommend(cid) {
+				var that = this;
+				var token = "";
+
+				if (localStorage.getItem('userinfo')) {
+					var userInfo = JSON.parse(localStorage.getItem('userinfo'));
+					token = userInfo.token;
+				}
+				var data = {
+					"key": cid,
+					"recommend": 1,
+					"token": token
+				}
+				uni.showModal({
+					title: '确定要推荐该帖子吗',
+					success: function(res) {
+						if (res.confirm) {
+							uni.showLoading({
+								title: "加载中"
+							});
+
+							that.$Net.request({
+								url: that.$API.toRecommend(),
+								data: data,
+								header: {
+									'Content-Type': 'application/x-www-form-urlencoded'
+								},
+								method: "get",
+								dataType: 'json',
+								success: function(res) {
+									setTimeout(function() {
+										uni.hideLoading();
+									}, 1000);
+									uni.showToast({
+										title: res.data.msg,
+										icon: 'none'
+									})
+									if (res.data.code == 1) {
+										that.page = 1;
+										that.moreText = "加载更多";
+										that.isLoad = 0;
+										that.getContentsList();
+									}
+
+								},
+								fail: function(res) {
+									setTimeout(function() {
+										uni.hideLoading();
+									}, 1000);
+									uni.showToast({
+										title: "QAQ信号君失踪了~",
+										icon: 'none'
+									})
+								}
+							})
+						} else if (res.cancel) {
+							console.log('用户点击取消');
+						}
+					}
+				});
+			},
+			rmRecommend(cid) {
+				var that = this;
+				var token = "";
+
+				if (localStorage.getItem('userinfo')) {
+					var userInfo = JSON.parse(localStorage.getItem('userinfo'));
+					token = userInfo.token;
+				}
+				var data = {
+					"key": cid,
+					"recommend": 0,
+					"token": token
+				}
+				uni.showModal({
+					title: '确定要取消推荐该帖子吗',
+					success: function(res) {
+						if (res.confirm) {
+							uni.showLoading({
+								title: "加载中"
+							});
+
+							that.$Net.request({
+								url: that.$API.toRecommend(),
+								data: data,
+								header: {
+									'Content-Type': 'application/x-www-form-urlencoded'
+								},
+								method: "get",
+								dataType: 'json',
+								success: function(res) {
+									setTimeout(function() {
+										uni.hideLoading();
+									}, 1000);
+									uni.showToast({
+										title: res.data.msg,
+										icon: 'none'
+									})
+									if (res.data.code == 1) {
+										that.page = 1;
+										that.moreText = "加载更多";
+										that.isLoad = 0;
+										that.getContentsList();
+									}
+
+								},
+								fail: function(res) {
+									setTimeout(function() {
+										uni.hideLoading();
+									}, 1000);
+									uni.showToast({
+										title: "QAQ信号君失踪了~",
+										icon: 'none'
+									})
+								}
+							})
+						} else if (res.cancel) {
+							console.log('用户点击取消');
+						}
+					}
+				});
+			},
+			addTop(cid) {
+				var that = this;
+				var token = "";
+
+				if (localStorage.getItem('userinfo')) {
+					var userInfo = JSON.parse(localStorage.getItem('userinfo'));
+					token = userInfo.token;
+				}
+				var data = {
+					"key": cid,
+					"istop": 3,
+					"token": token
+				}
+				uni.showModal({
+					title: '确定要置顶该帖子吗',
+					success: function(res) {
+						if (res.confirm) {
+							uni.showLoading({
+								title: "加载中"
+							});
+
+							that.$Net.request({
+								url: that.$API.toTop(),
+								data: data,
+								header: {
+									'Content-Type': 'application/x-www-form-urlencoded'
+								},
+								method: "get",
+								dataType: 'json',
+								success: function(res) {
+									setTimeout(function() {
+										uni.hideLoading();
+									}, 1000);
+									uni.showToast({
+										title: res.data.msg,
+										icon: 'none'
+									})
+									if (res.data.code == 1) {
+										that.page = 1;
+										that.moreText = "加载更多";
+										that.isLoad = 0;
+										that.getContentsList();
+									}
+
+								},
+								fail: function(res) {
+									setTimeout(function() {
+										uni.hideLoading();
+									}, 1000);
+									uni.showToast({
+										title: "QAQ信号君失踪了~",
+										icon: 'none'
+									})
+								}
+							})
+						} else if (res.cancel) {
+							console.log('用户点击取消');
+						}
+					}
+				});
+			},
+			rmTop(cid) {
+				var that = this;
+				var token = "";
+
+				if (localStorage.getItem('userinfo')) {
+					var userInfo = JSON.parse(localStorage.getItem('userinfo'));
+					token = userInfo.token;
+				}
+				var data = {
+					"key": cid,
+					"istop": 0,
+					"token": token
+				}
+				uni.showModal({
+					title: '确定要取消置顶该帖子吗',
+					success: function(res) {
+						if (res.confirm) {
+							uni.showLoading({
+								title: "加载中"
+							});
+
+							that.$Net.request({
+								url: that.$API.toTop(),
+								data: data,
+								header: {
+									'Content-Type': 'application/x-www-form-urlencoded'
+								},
+								method: "get",
+								dataType: 'json',
+								success: function(res) {
+									setTimeout(function() {
+										uni.hideLoading();
+									}, 1000);
+									uni.showToast({
+										title: res.data.msg,
+										icon: 'none'
+									})
+									if (res.data.code == 1) {
+										that.page = 1;
+										that.moreText = "加载更多";
+										that.isLoad = 0;
+										that.getContentsList();
+									}
+
+								},
+								fail: function(res) {
+									setTimeout(function() {
+										uni.hideLoading();
+									}, 1000);
+									uni.showToast({
+										title: "QAQ信号君失踪了~",
+										icon: 'none'
+									})
+								}
+							})
+						} else if (res.cancel) {
+							console.log('用户点击取消');
+						}
+					}
+				});
+			},
+			addTopb(cid) {
+				var that = this;
+				var token = "";
+
+				if (localStorage.getItem('userinfo')) {
+					var userInfo = JSON.parse(localStorage.getItem('userinfo'));
+					token = userInfo.token;
+				}
+				var data = {
+					"key": cid,
+					"istop": 2,
+					"token": token
+				}
+				uni.showModal({
+					title: '确定要版块置顶该帖子吗',
+					success: function(res) {
+						if (res.confirm) {
+							uni.showLoading({
+								title: "加载中"
+							});
+
+							that.$Net.request({
+								url: that.$API.toTop(),
+								data: data,
+								header: {
+									'Content-Type': 'application/x-www-form-urlencoded'
+								},
+								method: "get",
+								dataType: 'json',
+								success: function(res) {
+									setTimeout(function() {
+										uni.hideLoading();
+									}, 1000);
+									uni.showToast({
+										title: res.data.msg,
+										icon: 'none'
+									})
+									if (res.data.code == 1) {
+										that.page = 1;
+										that.moreText = "加载更多";
+										that.isLoad = 0;
+										that.getContentsList();
+									}
+
+								},
+								fail: function(res) {
+									setTimeout(function() {
+										uni.hideLoading();
+									}, 1000);
+									uni.showToast({
+										title: "QAQ信号君失踪了~",
+										icon: 'none'
+									})
+								}
+							})
+						} else if (res.cancel) {
+							console.log('用户点击取消');
+						}
+					}
+				});
+			},
+
+			addSwiper(cid) {
+				var that = this;
+				var token = "";
+
+				if (localStorage.getItem('userinfo')) {
+					var userInfo = JSON.parse(localStorage.getItem('userinfo'));
+					token = userInfo.token;
+				}
+				var data = {
+					"key": cid,
+					"isswiper": 1,
+					"token": token
+				}
+				uni.showModal({
+					title: '确定要轮播该文章吗',
+					success: function(res) {
+						if (res.confirm) {
+							uni.showLoading({
+								title: "加载中"
+							});
+
+							that.$Net.request({
+								url: that.$API.toSwiper(),
+								data: data,
+								header: {
+									'Content-Type': 'application/x-www-form-urlencoded'
+								},
+								method: "get",
+								dataType: 'json',
+								success: function(res) {
+									setTimeout(function() {
+										uni.hideLoading();
+									}, 1000);
+									uni.showToast({
+										title: res.data.msg,
+										icon: 'none'
+									})
+									if (res.data.code == 1) {
+										that.page = 1;
+										that.moreText = "加载更多";
+										that.isLoad = 0;
+										that.getContentsList();
+									}
+
+								},
+								fail: function(res) {
+									setTimeout(function() {
+										uni.hideLoading();
+									}, 1000);
+									uni.showToast({
+										title: "QAQ信号君失踪了~",
+										icon: 'none'
+									})
+								}
+							})
+						} else if (res.cancel) {
+							console.log('用户点击取消');
+						}
+					}
+				});
+			},
+			rmSwiper(cid) {
+				var that = this;
+				var token = "";
+
+				if (localStorage.getItem('userinfo')) {
+					var userInfo = JSON.parse(localStorage.getItem('userinfo'));
+					token = userInfo.token;
+				}
+				var data = {
+					"key": cid,
+					"isswiper": 0,
+					"token": token
+				}
+				uni.showModal({
+					title: '确定要取消轮播该文章吗',
+					success: function(res) {
+						if (res.confirm) {
+							uni.showLoading({
+								title: "加载中"
+							});
+
+							that.$Net.request({
+								url: that.$API.toSwiper(),
+								data: data,
+								header: {
+									'Content-Type': 'application/x-www-form-urlencoded'
+								},
+								method: "get",
+								dataType: 'json',
+								success: function(res) {
+									setTimeout(function() {
+										uni.hideLoading();
+									}, 1000);
+									uni.showToast({
+										title: res.data.msg,
+										icon: 'none'
+									})
+									if (res.data.code == 1) {
+										that.page = 1;
+										that.moreText = "加载更多";
+										that.isLoad = 0;
+										that.getContentsList();
+									}
+
+								},
+								fail: function(res) {
+									setTimeout(function() {
+										uni.hideLoading();
+									}, 1000);
+									uni.showToast({
+										title: "QAQ信号君失踪了~",
+										icon: 'none'
+									})
+								}
+							})
+						} else if (res.cancel) {
+							console.log('用户点击取消');
+						}
+					}
+				});
+			},
+			getRewardLog(id) {
+				var that = this;
+				var token = "";
+				that.rewardLog= [];
+				if (localStorage.getItem('userinfo')) {
+					var userInfo = JSON.parse(localStorage.getItem('userinfo'));
+					token = userInfo.token;
+				}
+				that.$Net.request({
+					url: that.$API.rewardList(),
+					data: {
+						"limit": 5,
+						"page": 1,
+						"id": id,
+						"token": token
+					},
+					header: {
+						'Content-Type': 'application/x-www-form-urlencoded'
+					},
+					method: "get",
+					dataType: 'json',
+					success: function(res) {
+						// console.log(res)
+						uni.stopPullDownRefresh();
+						if (res.data.code == 1) {
+							that.rewardLog = res.data.data;
+							var list = res.data.data;
+
+							var rewardTotal = 0;
+							for (var i in list) {
+								rewardTotal = rewardTotal + list[i].num;
+								
+							}
+						}
+					},
+					fail: function(res) {
+						uni.stopPullDownRefresh();
+					}
+				})
+			},
+			goReward(id) {
+				var that = this;
+				uni.navigateTo({
+					url: '/pages/contents/rewardLog?id=' + id
+				});
+			},
+			getLv(i) {
+				var that = this;
+				if (!i) {
+					var i = 0;
+				}
+				var lv = that.$API.getLever(i);
+				var leverList = that.$API.GetLeverList();
+				return leverList[lv];
+			},
+			getLvStyle(i) {
+				var that = this;
+				if (!i) {
+					var i = 0;
+				}
+				var lv = that.$API.getLever(i);
+				var rankStyle = that.$API.GetRankStyle();
+				var userlvStyle = "color:#fff;background-color: " + rankStyle[lv];
+				return userlvStyle;
+			},
+			toDeletePost(id) {
+				var that = this;
+				var token = "";
+
+				if (localStorage.getItem('userinfo')) {
+					var userInfo = JSON.parse(localStorage.getItem('userinfo'));
+					token = userInfo.token;
+				}
+				var data = {
+					"key": id,
+					"token": token
+				}
+				uni.showModal({
+					title: '确定要删除该文章吗',
+					success: function(res) {
+						if (res.confirm) {
+							uni.showLoading({
+								title: "加载中"
+							});
+
+							that.$Net.request({
+								url: that.$API.contentsDelete(),
+								data: data,
+								header: {
+									'Content-Type': 'application/x-www-form-urlencoded'
+								},
+								method: "get",
+								dataType: 'json',
+								success: function(res) {
+									setTimeout(function() {
+										uni.hideLoading();
+									}, 1000);
+									uni.showToast({
+										title: res.data.msg,
+										icon: 'none'
+									})
+									if (res.data.code == 1) {
+										that.page = 1;
+										that.moreText = "加载更多";
+										that.isLoad = 0;
+										that.getContentsList();
+									}
+
+								},
+								fail: function(res) {
+									setTimeout(function() {
+										uni.hideLoading();
+									}, 1000);
+									uni.showToast({
+										title: "QAQ信号君失踪了~",
+										icon: 'none'
+									})
+								}
+							})
+						} else if (res.cancel) {
+							console.log('用户点击取消');
+						}
+					}
+				});
+			},
+			addLock(id) {
+				var that = this;
+				var token = "";
+
+				if (localStorage.getItem('userinfo')) {
+					var userInfo = JSON.parse(localStorage.getItem('userinfo'));
+					token = userInfo.token;
+				}
+				var data = {
+					"key": id,
+					"tzlock": 1,
+					"token": token
+				}
+				uni.showModal({
+					title: '确定要锁定该文章吗',
+					success: function(res) {
+						if (res.confirm) {
+							uni.showLoading({
+								title: "加载中"
+							});
+
+							that.$Net.request({
+								url: that.$API.toLock(),
+								data: data,
+
+								header: {
+									'Content-Type': 'application/x-www-form-urlencoded'
+								},
+								method: "post",
+								dataType: 'json',
+								success: function(res) {
+
+									setTimeout(function() {
+										uni.hideLoading();
+									}, 1000);
+									uni.showToast({
+										title: res.data.msg,
+										icon: 'none'
+									})
+									if (res.data.code == 1) {
+										that.page = 1;
+										that.moreText = "加载更多";
+										that.isLoad = 0;
+										that.getContentsList();
+									}
+
+								},
+								fail: function(res) {
+									setTimeout(function() {
+										uni.hideLoading();
+									}, 1000);
+									uni.showToast({
+										title: "网络开小差了哦",
+										icon: 'none'
+									})
+								}
+							})
+						} else if (res.cancel) {
+							console.log('用户点击取消');
+						}
+					}
+				});
+			},
+			rmLock(id) {
+				var that = this;
+				var token = "";
+
+				if (localStorage.getItem('userinfo')) {
+					var userInfo = JSON.parse(localStorage.getItem('userinfo'));
+					token = userInfo.token;
+				}
+				var data = {
+					"key": id,
+					"tzlock": 0,
+					"token": token
+				}
+				uni.showModal({
+					title: '确定要取消锁定该文章吗',
+					success: function(res) {
+						if (res.confirm) {
+							uni.showLoading({
+								title: "加载中"
+							});
+
+							that.$Net.request({
+								url: that.$API.toLock(),
+								data: data,
+								header: {
+									'Content-Type': 'application/x-www-form-urlencoded'
+								},
+								method: "post",
+								dataType: 'json',
+								success: function(res) {
+									setTimeout(function() {
+										uni.hideLoading();
+									}, 1000);
+									uni.showToast({
+										title: res.data.msg,
+										icon: 'none'
+									})
+									if (res.data.code == 1) {
+										that.page = 1;
+										that.moreText = "加载更多";
+										that.isLoad = 0;
+										that.getContentsList();
+									}
+
+								},
+								fail: function(res) {
+									setTimeout(function() {
+										uni.hideLoading();
+									}, 1000);
+									uni.showToast({
+										title: "网络开小差了哦",
+										icon: 'none'
+									})
+								}
+							})
+						} else if (res.cancel) {
+							console.log('用户点击取消');
+						}
+					}
+				});
+			},
+
+
+		}
+	}
+</script>
+
+<style>
+	.stamp {
+		/* display: flex;
+		justify-content: flex-end; */
+		width: 180upx;
+		height: 100upx;
+		margin-top: 10upx;
+		/* margin-left: 30upx; */
+		/* margin-right: 0upx; */
+	}
+	
+</style>

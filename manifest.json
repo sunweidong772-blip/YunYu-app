@@ -1,0 +1,164 @@
+{
+    "name" : "云屿",
+    "appid" : "__UNI__C72AE90",
+    "description" : "云端之上，有座岛屿",
+    "versionName" : "1.5.7",
+    "versionCode" : 52,
+    "transformPx" : false,
+    "app-plus" : {
+        /* 5+App特有相关 */
+        "modules" : {
+            "OAuth" : {},
+            "Camera" : {},
+            "Barcode" : {},
+            "VideoPlayer" : {},
+            "Push" : {},
+            "Share" : {}
+        },
+        /* 模块配置 */
+        "distribute" : {
+            /* 应用发布信息 */
+            "android" : {
+                /* android打包配置 */
+                "permissions" : [
+                    "<uses-feature android:name=\"android.hardware.camera\"/>",
+                    "<uses-feature android:name=\"android.hardware.camera.autofocus\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_COARSE_LOCATION\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_WIFI_STATE\"/>",
+                    "<uses-permission android:name=\"android.permission.CALL_PHONE\"/>",
+                    "<uses-permission android:name=\"android.permission.CAMERA\"/>",
+                    "<uses-permission android:name=\"android.permission.CHANGE_NETWORK_STATE\"/>",
+                    "<uses-permission android:name=\"android.permission.CHANGE_WIFI_STATE\"/>",
+                    "<uses-permission android:name=\"android.permission.FLASHLIGHT\"/>",
+                    "<uses-permission android:name=\"android.permission.GET_ACCOUNTS\"/>",
+                    "<uses-permission android:name=\"android.permission.MODIFY_AUDIO_SETTINGS\"/>",
+                    "<uses-permission android:name=\"android.permission.MOUNT_UNMOUNT_FILESYSTEMS\"/>",
+                    "<uses-permission android:name=\"android.permission.READ_LOGS\"/>",
+                    "<uses-permission android:name=\"android.permission.READ_PROFILE\"/>",
+                    "<uses-permission android:name=\"android.permission.RECEIVE_BOOT_COMPLETED\"/>",
+                    "<uses-permission android:name=\"android.permission.RECORD_AUDIO\"/>",
+                    "<uses-permission android:name=\"android.permission.VIBRATE\"/>",
+                    "<uses-permission android:name=\"android.permission.WAKE_LOCK\"/>",
+                    "<uses-permission android:name=\"android.permission.WRITE_CONTACTS\"/>",
+                    "<uses-permission android:name=\"android.permission.WRITE_SETTINGS\"/>",
+                    "<uses-permission android:name=\"android.permission.RECEIVE_USER_PRESENT\"/>"
+                ],
+                "abiFilters" : [ "armeabi-v7a", "arm64-v8a" ],
+                "schemes" : "FastApp",
+                "minSdkVersion" : 21
+            },
+            "ios" : {
+                "dSYMs" : false
+            },
+            /* ios打包配置 */
+            "sdkConfigs" : {
+                "push" : {
+                    "unipush" : {}
+                },
+                "ad" : {
+                    "zy" : {},
+                    "fl" : {},
+                    "sigmob" : {},
+                    "ks" : {}
+                },
+                "share" : {
+                    "qq" : {
+                        "appid" : "102064559",
+                        "UniversalLinks" : ""
+                    }
+                },
+                "oauth" : {
+                    "qq" : {
+                        "appid" : "102064559",
+                        "UniversalLinks" : ""
+                    }
+                },
+                "payment" : {},
+                "statics" : {}
+            },
+            "icons" : {
+                "android" : {
+                    "hdpi" : "unpackage/res/icons/72x72.png",
+                    "xhdpi" : "unpackage/res/icons/96x96.png",
+                    "xxhdpi" : "unpackage/res/icons/144x144.png",
+                    "xxxhdpi" : "unpackage/res/icons/192x192.png"
+                },
+                "ios" : {
+                    "appstore" : "unpackage/res/icons/1024x1024.png",
+                    "ipad" : {
+                        "app" : "unpackage/res/icons/76x76.png",
+                        "app@2x" : "unpackage/res/icons/152x152.png",
+                        "notification" : "unpackage/res/icons/20x20.png",
+                        "notification@2x" : "unpackage/res/icons/40x40.png",
+                        "proapp@2x" : "unpackage/res/icons/167x167.png",
+                        "settings" : "unpackage/res/icons/29x29.png",
+                        "settings@2x" : "unpackage/res/icons/58x58.png",
+                        "spotlight" : "unpackage/res/icons/40x40.png",
+                        "spotlight@2x" : "unpackage/res/icons/80x80.png"
+                    },
+                    "iphone" : {
+                        "app@2x" : "unpackage/res/icons/120x120.png",
+                        "app@3x" : "unpackage/res/icons/180x180.png",
+                        "notification@2x" : "unpackage/res/icons/40x40.png",
+                        "notification@3x" : "unpackage/res/icons/60x60.png",
+                        "settings@2x" : "unpackage/res/icons/58x58.png",
+                        "settings@3x" : "unpackage/res/icons/87x87.png",
+                        "spotlight@2x" : "unpackage/res/icons/80x80.png",
+                        "spotlight@3x" : "unpackage/res/icons/120x120.png"
+                    }
+                }
+            },
+            "splashscreen" : {
+                "useOriginalMsgbox" : true,
+                "androidStyle" : "common",
+                "iosStyle" : "common",
+                "android" : {
+                    "hdpi" : "C:/Users/Administrator/Pictures/Camera Roll/1742642182809.png",
+                    "xhdpi" : "C:/Users/Administrator/Pictures/Camera Roll/1742642182809.png",
+                    "xxhdpi" : "C:/Users/Administrator/Pictures/Camera Roll/1742642182809.png"
+                }
+            }
+        },
+        "splashscreen" : {
+            "waiting" : true,
+            "alwaysShowBeforeRender" : true
+        },
+        "uniStatistics" : {
+            "enable" : true
+        }
+    },
+    /* SDK配置 */
+    "quickapp" : {},
+    /* 快应用特有相关 */
+    "mp-weixin" : {
+        /* 小程序特有相关 */
+        "appid" : "",
+        "setting" : {
+            "urlCheck" : false,
+            "es6" : true,
+            "postcss" : true
+        },
+        "uniStatistics" : {
+            "enable" : false
+        }
+    },
+    "h5" : {
+        "title" : "云屿",
+        "domain" : "demo.color-ui.com",
+        "router" : {
+            "base" : "./",
+            "mode" : "hash"
+        },
+        "uniStatistics" : {
+            "enable" : true
+        },
+        "template" : "template.h5.html"
+    },
+    "fallbackLocale" : "zh-Hans",
+    "locale" : "auto",
+    "uniStatistics" : {
+        "version" : "1"
+    }
+}
