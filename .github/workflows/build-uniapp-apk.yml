@@ -1,0 +1,101 @@
+name: Build UniApp Android APK
+
+on:
+  push:
+    branches: [fastapp]
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        ref: fastapp
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Setup JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+    
+    - name: Setup Android SDK
+      run: |
+        echo "ANDROID_HOME=$ANDROID_HOME"
+        echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+        sdkmanager --list_installed 2>/dev/null || true
+        sdkmanager "platforms;android-33" "build-tools;33.0.0" 2>/dev/null || true
+      env:
+        ANDROID_HOME: ${{ env.ANDROID_HOME }}
+    
+    - name: Install HBuilderX and build
+      timeout-minutes: 10
+      run: |
+        # 尝试下载 HBuilderX Linux 版
+        HB_URL="https://download1.dcloud.net.cn/download/HBuilderX.4.15.2024092607.linux.tar.gz"
+        echo "Downloading HBuilderX..."
+        curl -L -o /tmp/hbuilderx.tar.gz "$HB_URL" || \
+        curl -L -o /tmp/hbuilderx.tar.gz "https://download1.dcloud.net.cn/download/HBuilderX.4.14.2024082912.linux.tar.gz" || \
+        curl -L -o /tmp/hbuilderx.tar.gz "https://download1.dcloud.net.cn/download/HBuilderX.4.13.2024073008.linux.tar.gz" || \
+        echo "Download failed"
+        
+        if [ -f /tmp/hbuilderx.tar.gz ]; then
+          tar -xzf /tmp/hbuilderx.tar.gz -C /tmp/
+          ls /tmp/HBuilderX* 2>/dev/null
+          HB_PATH=$(find /tmp -name "cli" -path "*/HBuilderX/*" 2>/dev/null | head -1)
+          if [ -n "$HB_PATH" ]; then
+            echo "HBuilderX CLI found: $HB_PATH"
+            $HB_PATH open --path .
+            # 尝试打包 APP
+            $HB_PATH publish --platform APP --project . || echo "HBuilderX publish failed"
+          else
+            echo "HBuilderX CLI not found"
+          fi
+        else
+          echo "HBuilderX download failed"
+        fi
+      continue-on-error: true
+    
+    - name: Find APK files
+      run: |
+        echo "=== Searching for APK files ==="
+        find . -name "*.apk" 2>/dev/null | head -20
+        find /tmp -name "*.apk" 2>/dev/null | head -20
+        find ~ -name "*.apk" 2>/dev/null | head -20
+        ls -la unpackage/dist/build/app-plus/ 2>/dev/null || echo "no app-plus dir"
+        ls -la unpackage/dist/build/app/ 2>/dev/null || echo "no app dir"
+    
+    - name: Alternative - Manual build guide
+      if: failure()
+      run: |
+        echo "====================================="
+        echo "HBuilderX 自动打包失败"
+        echo "====================================="
+        echo "UniApp 项目需要在 HBuilderX 中进行打包："
+        echo "1. 下载 HBuilderX (https://www.dcloud.io/hbuilderx.html)"
+        echo "2. 打开本项目文件夹"
+        echo "3. 点击 发行 → 原生 App-云打包"
+        echo "4. 选择 Android，配置证书，点击打包"
+        echo ""
+        echo "或者使用离线打包："
+        echo "1. 下载 Android 离线 SDK"
+        echo "2. 将项目导出为 App 资源"
+        echo "3. 放入 Android 工程中编译"
+        echo "====================================="
+    
+    - name: Upload any found APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: uniapp-apk
+        path: |
+          **/*.apk
+          unpackage/dist/**/*
+        retention-days: 30
+      continue-on-error: true
