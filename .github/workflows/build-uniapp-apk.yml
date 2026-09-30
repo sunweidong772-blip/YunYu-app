@@ -36,25 +36,29 @@ jobs:
         ANDROID_HOME: ${{ env.ANDROID_HOME }}
     
     - name: Install HBuilderX and build
-      timeout-minutes: 10
+      timeout-minutes: 15
       run: |
-        # 尝试下载 HBuilderX Linux 版
-        HB_URL="https://download1.dcloud.net.cn/download/HBuilderX.4.15.2024092607.linux.tar.gz"
-        echo "Downloading HBuilderX..."
-        curl -L -o /tmp/hbuilderx.tar.gz "$HB_URL" || \
-        curl -L -o /tmp/hbuilderx.tar.gz "https://download1.dcloud.net.cn/download/HBuilderX.4.14.2024082912.linux.tar.gz" || \
-        curl -L -o /tmp/hbuilderx.tar.gz "https://download1.dcloud.net.cn/download/HBuilderX.4.13.2024073008.linux.tar.gz" || \
-        echo "Download failed"
+        # 使用正确的 HBuilderX Linux 下载链接
+        HB_URL="https://download1.dcloud.net.cn/download/HBuilderX.4.57.2025020616.linux.tar.gz"
+        echo "Downloading HBuilderX from $HB_URL..."
+        curl -L -o /tmp/hbuilderx.tar.gz "$HB_URL"
         
         if [ -f /tmp/hbuilderx.tar.gz ]; then
+          echo "Download completed, extracting..."
           tar -xzf /tmp/hbuilderx.tar.gz -C /tmp/
-          ls /tmp/HBuilderX* 2>/dev/null
+          ls -la /tmp/HBuilderX* 2>/dev/null || echo "No HBuilderX directory found"
+          
+          # 查找 HBuilderX CLI
           HB_PATH=$(find /tmp -name "cli" -path "*/HBuilderX/*" 2>/dev/null | head -1)
           if [ -n "$HB_PATH" ]; then
             echo "HBuilderX CLI found: $HB_PATH"
-            $HB_PATH open --path .
-            # 尝试打包 APP
-            $HB_PATH publish --platform APP --project . || echo "HBuilderX publish failed"
+            chmod +x "$HB_PATH"
+            
+            # 初始化项目
+            "$HB_PATH" open --path .
+            
+            # 尝试打包 APP (使用云打包或离线打包)
+            "$HB_PATH" publish --platform APP --project . || echo "HBuilderX publish failed"
           else
             echo "HBuilderX CLI not found"
           fi
